@@ -1,0 +1,55 @@
+---
+title: "Health Care Utilization and Immigration Enforcement"
+subtitle: "Project Proposal"
+format: pdf
+bibliography: references.bib
+csl: chicago-author-date.csl
+author:
+  - name: Naomi Buell
+  - name: Richie Rivera
+date: February 26, 2026
+documentclass: article
+classoption: 11pt
+geometry:
+  - margin=1in
+header-includes:
+  - \usepackage{fancyhdr}
+  - \usepackage{setspace}
+  - \onehalfspacing
+  - \pagestyle{fancy}
+  - \lhead{DATA 698}
+  - \rhead{Naomi Buell, Richie Rivera}
+  - \setcounter{secnumdepth}{7}
+---
+
+# Introduction
+
+Immigration-related fears appear to be negatively affecting health care access in the United States [@KFFSurvey2025]. Recent survey evidence indicates that nearly half (48%) of likely undocumented immigrant adults and 14% of immigrant adults overall report that they or a family member have avoided seeking medical care due to immigration-related concerns. These findings suggest that immigration enforcement may function as a structural barrier to health care access, even for individuals who are not directly targeted by enforcement actions. In January 2025, federal policy changes reversed prior protections that designated hospitals and other health care facilities as “sensitive locations,” limiting enforcement activity in these settings [@DHSStatement2025]. The removal of these protections may plausibly increase fears associated with seeking care, particularly in communities with visible or intensified U.S. Immigration and Customs Enforcement (ICE) activity. 
+
+Motivated by these developments, this project investigates the relationship between immigration enforcement intensity and health care utilization. Specifically, we seek to answer the question: *Does increased ICE enforcement correlate with reduced health care utilization or preventive care?* We hypothesize that higher levels of local enforcement activity are associated with greater health care avoidance, as individuals may be less willing to leave their homes or engage with formal institutions perceived as potential sites of immigration enforcement.
+
+# Data
+
+We have identified several datasets that may be useful for our analysis:
+
+1. Detention Facilities Average Daily Population [@TRACDetention2025]
+
+This data is available from the Transactional Records Access Clearinghouse (TRAC) and provides information on the average daily population of ICE detention facilities, broken down by city, state, ZIP code, and date from September 2019 through present. This dataset will allow us to measure the intensity of local immigration enforcement activity over time and across geographies.
+
+2. Immigration and Customs Enforcement Detention [@TRACDetention2019]
+
+This data is also available from TRAC and provides monthly counts of individuals detained by ICE at the county level from March 2015 through July 2019. This data also provides counts of individuals detained by ICE by various subgroups, including citizenship status, facility type, when they entered the facility, conviction level, gender, and more. This dataset will complement the first by providing additional granularity on enforcement activity and allowing us to explore potential differential impacts across subpopulations.
+
+3. Routine checkup within the past year among adults [@PLACES2025]
+
+This data is available from CDC's PLACES data and provides information on the percentage of adults who reported having a routine checkup within the past year, broken down by county, zip, census tract, and year from 2020-2025. This dataset will serve as our primary outcome variable, allowing us to assess health care utilization patterns in relation to local enforcement intensity.
+
+# Data analysis plan
+
+We plan to use PySpark to build panel data across datasets, geographies, and years. We will then use modeling techniques to analyze the relationship between immigration enforcement intensity and health care utilization. We will control for potential confounding factors such as socioeconomic status, demographic characteristics, and local health care infrastructure. We will also explore potential heterogeneity in the relationship by subpopulations, such as by citizenship status or facility type. A potential visualization of our analysis could be a series of maps showing the geographic distribution of enforcement intensity and health care utilization, as well as scatter plots or regression lines illustrating the relationship between these variables.
+
+# References
+
+
+
+
