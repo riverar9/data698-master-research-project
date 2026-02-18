@@ -46,7 +46,7 @@ This data is available from CDC's PLACES data and provides information on the pe
 
 # Data analysis plan
 
-We plan to use PySpark to build panel data across datasets, geographies, and years. We will then use modeling techniques to analyze the relationship between immigration enforcement intensity and health care utilization. We will control for potential confounding factors such as socioeconomic status, demographic characteristics, and local health care infrastructure. We will also explore potential heterogeneity in the relationship by subpopulations, such as by citizenship status or facility type. A potential visualization of our analysis could be a series of maps showing the geographic distribution of enforcement intensity and health care utilization, as well as scatter plots or regression lines illustrating the relationship between these variables.
+We plan to use Python/PySpark to build panel data across datasets, geographies, and years. We will then use modeling techniques to analyze the relationship between immigration enforcement intensity and health care utilization. We will control for potential confounding factors such as socioeconomic status, demographic characteristics, and local health care infrastructure. We will also explore potential heterogeneity in the relationship by subpopulations, such as by citizenship status or facility type. A potential visualization of our analysis could be a series of maps showing the geographic distribution of enforcement intensity and health care utilization, as well as scatter plots or regression lines illustrating the relationship between these variables.
 
 # References
 
