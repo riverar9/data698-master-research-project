@@ -1,7 +1,10 @@
 ---
 title: "Health Care Utilization and Immigration Enforcement"
 subtitle: "Midterm Report"
-format: pdf
+format: 
+  pdf:
+    toc: true
+    toc-depth: 2
 bibliography: references.bib
 csl: chicago-author-date.csl
 author:
@@ -9,7 +12,7 @@ author:
   - name: Richie Rivera
 date: April 19, 2026
 documentclass: article
-classoption: 11pt
+classoption: 12pt
 geometry:
   - margin=1in
 header-includes:
@@ -39,7 +42,13 @@ Immigration-related fears appear to be negatively affecting health care access i
 
 Motivated by these developments, this project investigates the relationship between immigration enforcement intensity and health care utilization. Specifically, we seek to answer the question: *Does increased ICE enforcement correlate with reduced health care utilization or preventive care?* We hypothesize that higher levels of local enforcement activity are associated with greater health care avoidance, as individuals may be less willing to leave their homes or engage with formal institutions perceived as potential sites of immigration enforcement.
 
+# Literature Review
+
+
+
 # Methods
+
+See Appendix A for detailed Python code used in data processing and analysis.
 
 ## Data
 
@@ -70,6 +79,10 @@ We plan to use Python/PySpark to build panel data across datasets, geographies, 
 -   The study provides evidence for maintaining healthcare facilities as safe zones.
 
 -   Research helps clinicians understand why immigrant patients may miss preventive care.
+
+# Discussion
+
+
 
 # Conclusion
 
