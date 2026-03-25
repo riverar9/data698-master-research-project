@@ -38,19 +38,23 @@ Conclusions:
 
 # Introduction
 
+> Required for midterm
+
 Immigration-related fears appear to be negatively affecting health care access in the United States [@KFFSurvey2025]. Recent survey evidence indicates that nearly half (48%) of likely undocumented immigrant adults and 14% of immigrant adults overall report that they or a family member have avoided seeking medical care due to immigration-related concerns. These findings suggest that immigration enforcement may function as a structural barrier to health care access, even for individuals who are not directly targeted by enforcement actions. In January 2025, federal policy changes reversed prior protections that designated hospitals and other health care facilities as “sensitive locations,” limiting enforcement activity in these settings [@DHSStatement2025]. The removal of these protections may plausibly increase fears associated with seeking care, particularly in communities with visible or intensified U.S. Immigration and Customs Enforcement (ICE) activity.
 
 Motivated by these developments, this project investigates the relationship between immigration enforcement intensity and health care utilization. Specifically, we seek to answer the question: *Does increased ICE enforcement correlate with reduced health care utilization or preventive care?* We hypothesize that higher levels of local enforcement activity are associated with greater health care avoidance, as individuals may be less willing to leave their homes or engage with formal institutions perceived as potential sites of immigration enforcement.
 
-# Literature Review
+# Literature Review 
 
-
+> Required for midterm. Minimum 10 references.
 
 # Methods
 
 See Appendix A for detailed Python code used in data processing and analysis.
 
 ## Data
+
+> Description of data sources required for midterm. Descriptive statistics.
 
 We have identified several datasets that may be useful for our analysis:
 
@@ -80,9 +84,9 @@ We plan to use Python/PySpark to build panel data across datasets, geographies, 
 
 -   Research helps clinicians understand why immigrant patients may miss preventive care.
 
+> Should have figures and tables here.
+
 # Discussion
-
-
 
 # Conclusion
 
