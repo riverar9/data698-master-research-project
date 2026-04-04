@@ -81,6 +81,32 @@ This data is available from CDC's PLACES data and provides information on the pe
 
 We will use data from the American Community Survey (ACS) 5-Year Estimates to control for social determinants of health in our analysis. This data provides information on social determinants of health at the ZCTA level. Social determinants of health analyzed included race, citizenship status, income, education, employment status, and housing conditions.
 
+@tbl-summary-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities, the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs.
+
+```{r}
+#| label: tbl-summary-statistics
+#| tbl-cap: "Summary statistics"
+#| echo: false
+#| warning: false
+
+library(tidyverse)
+library(skimr)
+
+panel_data <- read_csv("Data/panel_data.csv")
+
+tbl_summ_stats <- panel_data |> 
+  skim_without_charts() |> 
+  janitor::clean_names() |> 
+  as_tibble() |>
+  filter(skim_type == "numeric") |>
+  rename(Variable = skim_variable, "Completeness rate" = complete_rate, "Mean" = numeric_mean, "SD" = numeric_sd, "P50" = numeric_p50, "Min" = numeric_p0, "P25" = numeric_p25, "P75" = numeric_p75, "Max" = numeric_p100) |>
+  select(Variable, "Completeness rate", Mean, SD) |>
+  mutate(across(where(is.numeric), ~ signif(., 2))) |> 
+  knitr::kable()
+
+tbl_summ_stats
+```
+
 ## Analysis
 
 We plan to use Python to build panel data across datasets, geographies, and years. We will then use modeling techniques to analyze the relationship between immigration enforcement intensity and health care utilization. We will control for potential confounding factors such as socioeconomic status, demographic characteristics, and local health care infrastructure. We will also explore potential heterogeneity in the relationship by subpopulations, such as by citizenship status or facility type. A potential visualization of our analysis could be a series of maps showing the geographic distribution of enforcement intensity and health care utilization, as well as scatter plots or regression lines illustrating the relationship between these variables.
