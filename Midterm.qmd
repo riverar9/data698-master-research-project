@@ -25,7 +25,7 @@ header-includes:
   - \setcounter{secnumdepth}{7}
 ---
 
-# Abstract
+# Abstract (to be completed for final report)
 
 Background:
 
@@ -55,33 +55,40 @@ The mechanisms linking enforcement to reduced care-seeking are increasingly well
 
 While prior studies have well-documented enforcement effects through state-level analyses, provider surveys, and local case studies, comprehensive research examining the relationship on a national scale at granular geographic and temporal levels remains limited. This project addresses this gap by using national datasets on ICE detention activity and health care utilization to analyze the enforcement-utilization relationship across geographies and over time, allowing us to quantify a relationship that prior research has established in principle but not comprehensively measured at scale.
 
-# Methods
+# Methods 
 
 See Appendix A for detailed Python code used in data processing and analysis.
 
-## Data Sources
+## Data
 
-<!--# Description of data sources required for midterm. Descriptive statistics. Add maps?-->
+<!--# Description of data sources required for midterm. Descriptive statistics added. Add maps?-->
 
-We have identified several datasets that may be useful for our analysis: immigration enforcement data from the Transactional Records Access Clearinghouse (TRAC) and health care utilization data from the CDC's PLACES data. We will also use census data to control for social determinants of health in our analysis.
+We utilize data on immigration enforcement, health care utilization data, and social determinants of health. Detention Facilities Average Daily Population data is available from the Transactional Records Access Clearinghouse (TRAC) and provides information on the average daily population of ICE detention facilities, broken down by city, state, ZIP code, and date from September 2019 through present [@TRACDetention2025]. This dataset will allow us to measure the intensity of local immigration enforcement activity over time and across geographies. 
 
-1.  Detention Facilities Average Daily Population [@TRACDetention2025]
+<!--# I think we could remove the following paragraph/dataset from our analysis. -->
 
-This data is available from the Transactional Records Access Clearinghouse (TRAC) and provides information on the average daily population of ICE detention facilities, broken down by city, state, ZIP code, and date from September 2019 through present. This dataset will allow us to measure the intensity of local immigration enforcement activity over time and across geographies.
+This Immigration and Customs Enforcement Detention is also available from TRAC and provides monthly counts of individuals detained by ICE at the county level from March 2015 through July 2019 [@TRACDetention2019]. This data also provides counts of individuals detained by ICE by various subgroups, including citizenship status, facility type, when they entered the facility, conviction level, gender, and more. This dataset will complement the first by providing additional granularity on enforcement activity and allowing us to explore potential differential impacts across subpopulations.
 
-2.  Immigration and Customs Enforcement Detention [@TRACDetention2019]
+Routine checkup within the past year among adults data is available from CDC's PLACES data and provides information on the percentage of adults who reported having a routine checkup within the past year, broken down by county, ZCTA, and year from 2020-2025 [@PLACES2025]. This dataset will serve as our primary outcome variable, allowing us to assess health care utilization patterns in relation to local enforcement intensity.
 
-This data is also available from TRAC and provides monthly counts of individuals detained by ICE at the county level from March 2015 through July 2019. This data also provides counts of individuals detained by ICE by various subgroups, including citizenship status, facility type, when they entered the facility, conviction level, gender, and more. This dataset will complement the first by providing additional granularity on enforcement activity and allowing us to explore potential differential impacts across subpopulations.
+We will use data from the American Community Survey (ACS) 5-Year Estimates to control for social determinants of health in our analysis [@CensusAPI]. This data provides information on social determinants of health at the ZCTA level. Social determinants of health analyzed included race, citizenship status, income, education, employment status, and housing conditions.
 
-3.  Routine checkup within the past year among adults [@PLACES2025]
+```{r}
+#| label: unique-zctas
+#| echo: false
+#| warning: false
 
-This data is available from CDC's PLACES data and provides information on the percentage of adults who reported having a routine checkup within the past year, broken down by county, ZCTA, and year from 2020-2025. This dataset will serve as our primary outcome variable, allowing us to assess health care utilization patterns in relation to local enforcement intensity.
+library(tidyverse)
+library(skimr)
 
-4. Census data on social determinants of health (SDOH) [@CensusAPI]
+panel_data <- read_csv("Data/panel_data.csv") 
 
-We will use data from the American Community Survey (ACS) 5-Year Estimates to control for social determinants of health in our analysis. This data provides information on social determinants of health at the ZCTA level. Social determinants of health analyzed included race, citizenship status, income, education, employment status, and housing conditions.
+unique_zctas <- panel_data |> 
+  distinct(zcta5) |> 
+  nrow()
+```
 
-@tbl-summary-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities, the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs.
+Our panel data spans from 2018 to 2023 and includes `r format(unique_zctas, big.mark=",")` unique ZIP Code Tabulation Areas (ZCTAs) across the United States. @tbl-summary-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities, the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs.
 
 ```{r}
 #| label: tbl-summary-statistics
@@ -92,26 +99,66 @@ We will use data from the American Community Survey (ACS) 5-Year Estimates to co
 library(tidyverse)
 library(skimr)
 
-panel_data <- read_csv("Data/panel_data.csv")
+panel_data <- read_csv("Data/panel_data.csv") 
 
-tbl_summ_stats <- panel_data |> 
+unique_zctas <- panel_data |> 
+  distinct(zcta5) |> 
+  pull()
+
+tbl_summ_stats  <- panel_data |>
+  select(
+    doctor_visits_past_year, 
+    pct_population_in_detention,
+    pct_hispanic_latino,
+    pct_white,
+    pct_black,
+    pct_asian,
+    pct_two_plus,
+    pct_other_race,
+    pct_non_citizen,
+    median_household_income,
+    pct_below_poverty,
+    pct_unemployed,
+    pct_high_school_or_higher,
+    pct_no_internet,
+    pct_no_vehicle
+    ) |>
+  rename(
+    "Percent of adults who had a visit with a doctor or other health care professional in the past year" = doctor_visits_past_year,
+    "Percent of population in ICE detention facilities" = pct_population_in_detention,
+    "Hispanic/Latino" = pct_hispanic_latino,
+    "White" = pct_white,
+    "Black" = pct_black,
+    "Asian" = pct_asian,
+    "Two or more races" = pct_two_plus,
+    "Other race" = pct_other_race,
+    "Non-citizen" = pct_non_citizen,
+    "Household income" = median_household_income,
+    "Below poverty line" = pct_below_poverty,
+    "Unemployed" = pct_unemployed,
+    "High school education or higher" = pct_high_school_or_higher,
+    "Without internet access" = pct_no_internet,
+    "Without a vehicle" = pct_no_vehicle
+) |> 
   skim_without_charts() |> 
   janitor::clean_names() |> 
   as_tibble() |>
   filter(skim_type == "numeric") |>
-  rename(Variable = skim_variable, "Completeness rate" = complete_rate, "Mean" = numeric_mean, "SD" = numeric_sd, "P50" = numeric_p50, "Min" = numeric_p0, "P25" = numeric_p25, "P75" = numeric_p75, "Max" = numeric_p100) |>
-  select(Variable, "Completeness rate", Mean, SD) |>
-  mutate(across(where(is.numeric), ~ signif(., 2))) |> 
+  rename(Variable = skim_variable, "Mean" = numeric_mean, "SD" = numeric_sd) |>
+  select(Variable, Mean, SD) |>
+  mutate(across(where(is.numeric), ~ format(., scientific = FALSE, digits = 1))) |> 
   knitr::kable()
 
 tbl_summ_stats
 ```
 
-## Analysis
+<!--# Insert map figure(s)-->
+
+## Analysis (in progress)
 
 We plan to use Python to build panel data across datasets, geographies, and years. We will then use modeling techniques to analyze the relationship between immigration enforcement intensity and health care utilization. We will control for potential confounding factors such as socioeconomic status, demographic characteristics, and local health care infrastructure. We will also explore potential heterogeneity in the relationship by subpopulations, such as by citizenship status or facility type. A potential visualization of our analysis could be a series of maps showing the geographic distribution of enforcement intensity and health care utilization, as well as scatter plots or regression lines illustrating the relationship between these variables.
 
-# Results
+# Results (in progress)
 
 -   Results will identify specific geographic areas in need of health outreach.
 
@@ -123,8 +170,8 @@ We plan to use Python to build panel data across datasets, geographies, and year
 
 <!--# Should have figures and tables here. -->
 
-# Discussion
+# Discussion (in progress)
 
-# Conclusion
+# Conclusion (in progress)
 
 # References
