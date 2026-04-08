@@ -154,7 +154,7 @@ tbl_summ_stats <- fig_data |>
 tbl_summ_stats
 ```
 
-@fig-correlation-matrix provides a visual representation of the correlations between a subset of our analysis variables. The population in ICE detention facilities does not seem to be strongly correlated with the rate of doctor visits in a particular area. Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits. 
+@fig-correlation-matrix provides the correlations between a subset of our analysis variables. The population in ICE detention facilities does not seem to be strongly correlated with the rate of doctor visits in a particular area. Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits, where places with a higher hispanic/latino or non-citizens living in the area tend to have lower rates of people reporting having been to the doctor in the past year.
 
 ```{r}
 #| label: fig-correlation-matrix
