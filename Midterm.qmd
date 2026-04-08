@@ -88,11 +88,11 @@ unique_zctas <- panel_data |>
   nrow()
 ```
 
-Our panel data spans from 2018 to 2023 and includes `r format(unique_zctas, big.mark=",")` unique ZIP Code Tabulation Areas (ZCTAs) across the United States. @tbl-summary-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities, the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs.
+Our panel data spans from 2018 to 2023 and includes `r format(unique_zctas, big.mark=",")` unique ZIP Code Tabulation Areas (ZCTAs) across the United States. @tbl-descriptive-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities, the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs.
 
 ```{r}
-#| label: tbl-summary-statistics
-#| tbl-cap: "Summary statistics"
+#| label: tbl-descriptive-statistics
+#| tbl-cap: "Descriptive statistics"
 #| echo: false
 #| warning: false
 
@@ -105,7 +105,7 @@ unique_zctas <- panel_data |>
   distinct(zcta5) |> 
   pull()
 
-tbl_summ_stats  <- panel_data |>
+fig_data <- panel_data |>
   select(
     doctor_visits_past_year, 
     pct_population_in_detention,
@@ -139,7 +139,9 @@ tbl_summ_stats  <- panel_data |>
     "High school education or higher" = pct_high_school_or_higher,
     "Without internet access" = pct_no_internet,
     "Without a vehicle" = pct_no_vehicle
-) |> 
+)
+
+tbl_summ_stats <- fig_data |>
   skim_without_charts() |> 
   janitor::clean_names() |> 
   as_tibble() |>
@@ -150,6 +152,56 @@ tbl_summ_stats  <- panel_data |>
   knitr::kable()
 
 tbl_summ_stats
+```
+
+@fig-correlation-matrix provides a visual representation of the correlations between a subset of our analysis variables. The population in ICE detention facilities does not seem to be strongly correlated with the rate of doctor visits in a particular area. Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits. 
+
+```{r}
+#| label: fig-correlation-matrix
+#| fig-cap: "Correlation matrix. Note: Correlations below 0.01 are suppressed."
+#| fig-width: 9
+#| fig-height: 6
+#| echo: false
+#| warning: false
+
+library(corrplot)
+
+corr_matrix <- fig_data |> 
+  rename(
+    "Doctor visits in past year" = `Percent of adults who had a visit with a doctor or other health care professional in the past year`,
+    "Population in ICE detention" = `Percent of population in ICE detention facilities`
+  ) |> 
+  select(
+    "Doctor visits in past year",
+    "Population in ICE detention",
+    "Hispanic/Latino",
+    "White",
+    "Non-citizen",
+    "Household income",
+    "Below poverty line",
+    "Unemployed",
+    "High school education or higher",
+    "Without internet access",
+    "Without a vehicle"
+  ) |> 
+  cor(use = "complete.obs")
+
+# Hide correlations below 0.01 threshold
+corr_matrix[abs(corr_matrix) < 0.01] <- NA
+
+corrplot(
+  corr_matrix,
+  type = "upper",
+  addCoef.col = "black",
+  tl.col = "black",
+  tl.srt = 45,
+  number.cex = 0.8,
+  tl.cex = 1,
+  diag = FALSE,
+  na.label = " ",
+  cl.pos = "n"
+)
+
 ```
 
 <!--# Insert map figure(s)-->
