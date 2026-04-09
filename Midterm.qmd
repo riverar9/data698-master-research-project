@@ -208,7 +208,7 @@ The spatial distribution of immigration enforcement shown in @fig-map-ice-intens
 
 ![Scatter plot of log ICE Detentions vs. Doctor Visits](./midterm-images/scatterplot-drvisits-vs-avg-dly-pop.png){#fig-scatterplot-drvisits-vs-avg-dly-pop width=100%}
 
-The scatter plot in @fig_scatterplot_drvisits_vs_avg_dly_pop shows that there is no identifiable linear correlation between the two variables. ZCTAs with disparate levels of healthcare utilization are distributed relatively evenly across the entire spectrum of detention intensity. This indicates that the operational size of a detention facility, as quantified by Average Daily Population, is likely not a primary driver for the frequency with which a community accesses routine medical care.
+The scatter plot in @fig-scatterplot-drvisits-vs-avg-dly-pop shows that there is no identifiable linear correlation between the two variables. ZCTAs with disparate levels of healthcare utilization are distributed relatively evenly across the entire spectrum of detention intensity. This indicates that the operational size of a detention facility, as quantified by Average Daily Population, is likely not a primary driver for the frequency with which a community accesses routine medical care.
 
 ## Analysis (in progress)
 
