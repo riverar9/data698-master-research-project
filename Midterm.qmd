@@ -78,10 +78,10 @@ We will use data from the American Community Survey (ACS) 5-Year Estimates to co
 #| echo: false
 #| warning: false
 
-library(tidyverse)
+library(tidyverse, warn.conflicts = FALSE)
 library(skimr)
 
-panel_data <- read_csv("Data/panel_data.csv") 
+panel_data <- read_csv("Data/panel_data.csv", show_col_types = FALSE)
 
 unique_zctas <- panel_data |> 
   distinct(zcta5) |> 
@@ -154,57 +154,61 @@ tbl_summ_stats <- fig_data |>
 tbl_summ_stats
 ```
 
-@fig-correlation-matrix provides the correlations between a subset of our analysis variables. The population in ICE detention facilities does not seem to be strongly correlated with the rate of doctor visits in a particular area. Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits, where places with a higher hispanic/latino or non-citizens living in the area tend to have lower rates of people reporting having been to the doctor in the past year.
+## Geographic Distribution of Health Care Utilization
+
+The following map visualizes the percentage of adults who reported a doctor visit within the past year at the ZCTA level for 2023.
 
 ```{r}
-#| label: fig-correlation-matrix
-#| fig-cap: "Correlation matrix. Note: Correlations below 0.01 are suppressed."
-#| fig-width: 9
-#| fig-height: 6
+#| label: fig_map_doctor_visits
+#| fig_cap: !expr paste0("Percentage of Doctor Visits in Past Year (2023). The national median utilization rate for routine checkups across all ZCTAs is ", round(median(panel_data$doctor_visits_past_year, na.rm = TRUE), 1), "%.")
+#| out.width: "100%"
 #| echo: false
-#| warning: false
 
-library(corrplot)
+# Filter data for 2023 calculations
+panel_2023 <- panel_data %>% 
+  filter(year == 2023)
 
-corr_matrix <- fig_data |> 
-  rename(
-    "Doctor visits in past year" = `Percent of adults who had a visit with a doctor or other health care professional in the past year`,
-    "Population in ICE detention" = `Percent of population in ICE detention facilities`
-  ) |> 
-  select(
-    "Doctor visits in past year",
-    "Population in ICE detention",
-    "Hispanic/Latino",
-    "White",
-    "Non-citizen",
-    "Household income",
-    "Below poverty line",
-    "Unemployed",
-    "High school education or higher",
-    "Without internet access",
-    "Without a vehicle"
-  ) |> 
-  cor(use = "complete.obs")
+# Calculate statistics for the narrative below
+med_val <- round(median(panel_2023$doctor_visits_past_year, na.rm = TRUE), 1)
+q1_val  <- round(quantile(panel_2023$doctor_visits_past_year, 0.25, na.rm = TRUE), 1)
+q3_val  <- round(quantile(panel_2023$doctor_visits_past_year, 0.75, na.rm = TRUE), 1)
+```
 
-# Hide correlations below 0.01 threshold
-corr_matrix[abs(corr_matrix) < 0.01] <- NA
+![Map of Doctor Visits by ZCTA](midterm-images/map-doctor-visits.png){#fig-map-doctor-visits}
 
-corrplot(
-  corr_matrix,
-  type = "upper",
-  addCoef.col = "black",
-  tl.col = "black",
-  tl.srt = 45,
-  number.cex = 0.8,
-  tl.cex = 1,
-  diag = FALSE,
-  na.label = " ",
-  cl.pos = "n"
-)
+The Map in @fig-map-doctor-visits reveals a stark divide between the national norm and the specific "cold spots" that align with our research hypothesis. The median utilization rate of `r med_val`% suggests that for the majority of the United States, annual healthcare engagement is a standard behavior. The tight interquartile range (`r q1_val`% to `r q3_val`%) indicates that in most ZCTAs, about four out of five adults see a professional yearly. This represents the "health norm" from which the outliers deviate.
+
+Spatial analysis of these outliers reveals significant geographic clustering. While the Northeast and Upper Midwest maintain high utilization, a distinct belt of low healthcare engagement is visible across the Southwest. These regions exhibit rates significantly below the national interquartile range, often falling between 55% and 65%.
+
+## Geographic Distribution of Immigration Enforcement Intensity
+
+```{r}
+#| label: fig_map_ice_intensity
+#| fig_cap: "ICE Enforcement Intensity (2023): Average Daily Population (ADP) in Detention Facilities."
+#| out.width: "100%"
+#| echo: false
+
+# Filter for latest intensity metrics
+ice_2023 <- panel_data %>% 
+  filter(year == 2023)
+
+# Calculate stats for the narrative
+# We use 90th percentile because ICE data is often heavily skewed
+ice_median <- round(median(ice_2023$average_daily_population, na.rm = TRUE), 1)
+ice_90th   <- round(quantile(ice_2023$average_daily_population, 0.90, na.rm = TRUE), 1)
+ice_max    <- round(max(ice_2023$average_daily_population, na.rm = TRUE), 0)
 
 ```
 
-<!--# Insert map figure(s)-->
+![Map of ICE Detentions by ZCTA](./midterm-images/map-ice-intensity.png){#fig-map-ice-intensity width=100%}
+
+The spatial distribution of immigration enforcement shown in @fig-map-ice-intensity illustrates the concentrated nature of federal enforcement infrastructure. Unlike general socioeconomic variables that tend to vary gradually across geographies, ICE detentions are highly localized, with a small number of ZCTAs exhibiting extremely high average daily populations (ADP) in detention facilities. The median ADP across ZCTAs is `r ice_median`, indicating what we can see in the map which is that most areas have minimal enforcement activity. However, the 90th percentile ADP is `r ice_90th`, and the maximum ADP reaches `r ice_max`, demonstrating that certain ZCTAs experience disproportionately intense enforcement.
+
+## Correlation Between Enforcement Intensity and Health Care Utilization
+
+![Scatter plot of log ICE Detentions vs. Doctor Visits](./midterm-images/scatterplot-drvisits-vs-avg-dly-pop.png){#fig-scatterplot-drvisits-vs-avg-dly-pop width=100%}
+
+The scatter plot in @fig_scatterplot_drvisits_vs_avg_dly_pop shows that there is no identifiable linear correlation between the two variables. ZCTAs with disparate levels of healthcare utilization are distributed relatively evenly across the entire spectrum of detention intensity. This indicates that the operational size of a detention facility, as quantified by Average Daily Population, is likely not a primary driver for the frequency with which a community accesses routine medical care.
 
 ## Analysis (in progress)
 
