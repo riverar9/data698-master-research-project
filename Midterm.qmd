@@ -152,7 +152,16 @@ tbl_summ_stats  <- panel_data |>
 tbl_summ_stats
 ```
 
-<!--# Insert map figure(s)-->
+## Geographic Distribution of Health Care Utilization
+
+The following map visualizes the percentage of adults who reported a doctor visit within the past year at the ZCTA level for 2023.
+
+```{r}
+#| label: fig_map_doctor_visits
+#| fig_cap: "Percentage of Doctor Visits in Past Year (2023)"
+#| out.width: "100%"
+#| echo: false
+knitr::include_graphics("midterm-images/map-doctor-visits.png")
 
 ## Analysis (in progress)
 
