@@ -1,3 +1,5 @@
 .venv/
 Appendix A - Python Code_files/
 Data/zcta-spatial
+Data/places-merged
+Data/acs-zcta-data
