@@ -210,6 +210,18 @@ The spatial distribution of immigration enforcement shown in @fig-map-ice-intens
 
 The scatter plot in @fig-scatterplot-drvisits-vs-avg-dly-pop shows that there is no identifiable linear correlation between the two variables. ZCTAs with disparate levels of healthcare utilization are distributed relatively evenly across the entire spectrum of detention intensity. This indicates that the operational size of a detention facility, as quantified by Average Daily Population, is likely not a primary driver for the frequency with which a community accesses routine medical care.
 
+## Doctor Visits by Citizen Status
+
+![Box plot of doctor visits by citizenship status where there detainees](./midterm-images/boxplot-dr-visits-by-ha-pop-combined.png){#fig-boxplot-dr-visits-by-citizen-status width=100%}
+
+The box plot in @fig-boxplot-dr-visits-by-citizen-status shows how health care utilization varies by citizenship status across ZCTAs with detention facilities. By comparing the citizen population to the non-citizen population and differentiating between ZCTAs with and without detainees we can see how enforcement may be impacting health care utilization for different subpopulations. It is pretty clear that the median utilization rate decreases as the non-citizen population increases and this pattern is further exacerbated in ZCTAs with detention facilities. This can suggests that the presence of a detention facility may be contributing to reduced health care utilization among non-citizen populations although we cannot rule out that there may be other confounders which may be driving this relationship.
+
+## Annual Distribution of Detainee Data
+
+![Box plot of average daily population in detention facilities by year](./midterm-images/boxplot-avg-dly-pop-per-year.png){#fig-boxplot-avg-dly-pop-by-year width=100%}
+
+The box plot in @fig-boxplot-avg-dly-pop-by-year shows the distribution of average daily population in detention facilities across ZCTAs for each year from 2019 to 2023. The plot reveals that while the median ADP remains relatively stable across years, there was a slight reduction form 2019 through 2021 but has had a sharp increase in 2022 and 2023. The interquartile range also appears to widen in the later years, suggesting that while many ZCTAs continue to have low ADP, a growing number of ZCTAs are experiencing higher levels of enforcement activity.
+
 ## Analysis (in progress)
 
 We plan to use Python to build panel data across datasets, geographies, and years. We will then use modeling techniques to analyze the relationship between immigration enforcement intensity and health care utilization. We will control for potential confounding factors such as socioeconomic status, demographic characteristics, and local health care infrastructure. We will also explore potential heterogeneity in the relationship by subpopulations, such as by citizenship status or facility type. A potential visualization of our analysis could be a series of maps showing the geographic distribution of enforcement intensity and health care utilization, as well as scatter plots or regression lines illustrating the relationship between these variables.
