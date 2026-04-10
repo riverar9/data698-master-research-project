@@ -222,6 +222,32 @@ The box plot in @fig-boxplot-dr-visits-by-citizen-status shows how health care u
 
 The box plot in @fig-boxplot-avg-dly-pop-by-year shows the distribution of average daily population in detention facilities across ZCTAs for each year from 2019 to 2023. The plot reveals that while the median ADP remains relatively stable across years, there was a slight reduction form 2019 through 2021 but has had a sharp increase in 2022 and 2023. The interquartile range also appears to widen in the later years, suggesting that while many ZCTAs continue to have low ADP, a growing number of ZCTAs are experiencing higher levels of enforcement activity.
 
+## Demographic differences in healthcare utilization
+
+![Correlation Matrix of doctor visits by year and ethnicity](./midterm-images/corrplot-dr-visits-and-ethnicity.png ){#fig-corrplot-dr-visits-and-ethnicity width=100%}
+
+The correlation matrix in @fig-corrplot-dr-visits-and-ethnicity above shows the observed correlation between healthcare utilization and demographic compositions of ZCTAs. As we can see, there is a positive correlation between healthcare utilization and the percentage of white and black population. There is a strong negative correlation between healthcare utilization and the percentage of Hispanic/Latino and other populations with a weaker negative correlation with the Asian population. This suggests that ZCTAs with higher proportions of Hispanic/Latino have a propensity for lower healthcare utilization, which may be driven by a variety of factors.
+
+## Educational attainment and healthcare utilization
+
+![Scatter Plot of Doctor Visits by Education Level - Highschool or Higher](./midterm-images/scatterplot-visits-vs-high-school-rate.png){#fig-scatterplot-visits-vs-high-school-rate width=100%}
+
+![Scatter Plot of Doctor Visits by Education Level - Bachelors or Higher](./midterm-images/scatterplot-visits-vs-bach-rate.png){#fig-scatterplot-visits-vs-bach-rate width=100%}
+
+![Regression Plot of the correlation between doctor visits education rate](./midterm-images/regressionplot-visits-vs-education.png){#fig-regressionplot-visits-vs-education width=100%}
+
+@fig-scatterplot-visits-vs-high-school-rate and @fig-scatterplot-visits-vs-bach-rate show the relationship between healthcare utilization and educational attainment. Both plots show the observed correlation between the percentage of the population with a high school education or higher and the percentage of adults who had a doctor visit in the past year. The correlation appears to be much stronger for the high school education variable than for the bachelor's degree variable, suggesting that basic educational attainment is much more important of a factor in the population's healthcare utilization than higher education. The regression plot in @fig-regressionplot-visits-vs-education further illustrates this relationship by showing the fitted regression line for the correlation between doctor visits and high school education rate, which shows a clear and strong positive relationship with high school completion rates and almost no relationship with bachelor's degree rates.
+
+## Economic Drivers and healthcare utilization
+
+![Scatter Plot of Doctor Visits by Median Household Income](./midterm-images/scatterplot-visits-vs-median-income.png){#fig-scatterplot-visits-vs-median-income width=100%}
+
+The scatter plot in @fig-scatterplot-visits-vs-median-income shows the relationship between healthcare utilization and median household income. The plot reveals that there is a very small positive correlation.
+
+![Scatter Plot of Doctor Visits by Unemployment Rate](./midterm-images/scatterplot-visits-vs-unemployment-rate.png){#fig-scatterplot-visits-vs-unemployment-rate width=100%}
+
+In contrast, the scatter plot in @fig-scatterplot-visits-vs-unemployment-rate shows a much stronger negative correlation between healthcare utilization and unemployment rates. This suggests that economic factors, particularly unemployment, may be more significant drivers of healthcare utilization than income levels.
+
 ## Analysis (in progress)
 
 We plan to use Python to build panel data across datasets, geographies, and years. We will then use modeling techniques to analyze the relationship between immigration enforcement intensity and health care utilization. We will control for potential confounding factors such as socioeconomic status, demographic characteristics, and local health care infrastructure. We will also explore potential heterogeneity in the relationship by subpopulations, such as by citizenship status or facility type. A potential visualization of our analysis could be a series of maps showing the geographic distribution of enforcement intensity and health care utilization, as well as scatter plots or regression lines illustrating the relationship between these variables.
