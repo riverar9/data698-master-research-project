@@ -244,7 +244,7 @@ The correlation matrix in @fig-corrplot-dr-visits-and-ethnicity above shows the 
 
 The scatter plot in @fig-scatterplot-visits-vs-median-income shows the relationship between healthcare utilization and median household income. The plot reveals that there is a very small positive correlation.
 
-![Scatter Plot of Doctor Visits by Unemployment Rate](./midterm-images/scatterplot-visits-vs-unemployment-rate.png){#fig-scatterplot-visits-vs-unemployment-rate width=100%}
+![Scatter Plot of Doctor Visits by Unemployment Rate](./midterm-images/scatterplot-visits-vs-enemployment-rate.png){#fig-scatterplot-visits-vs-unemployment-rate width=100%}
 
 In contrast, the scatter plot in @fig-scatterplot-visits-vs-unemployment-rate shows a much stronger negative correlation between healthcare utilization and unemployment rates. This suggests that economic factors, particularly unemployment, may be more significant drivers of healthcare utilization than income levels.
 
