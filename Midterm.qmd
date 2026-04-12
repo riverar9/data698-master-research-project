@@ -27,19 +27,17 @@ header-includes:
 
 # Abstract (to be completed for final report)
 
-Background:
+Background: The removal of "sensitive location" protections and increased ICE activity function can discourage people from seeking medical care by creating fear, stress, and other barriers to accessing health services, including among immigrant communities not directly targeted by enforcement. 
 
-Objective: To quantify the impact of immigration enforcement intensity on health care utilization among immigrant populations, specifically evaluating whether the removal of "sensitive location" protections and increased ICE activity function as structural barriers to medical and preventive care.
+Objective: To assess whether increased ICE enforcement correlates with reduced health care utilization.
 
-Methods:
+Methods: We use national datasets on ICE detention activity and health care utilization to analyze the relationship between enforcement intensity and health care utilization across geographies and over time. We will control for potential confounders such as socioeconomic status, demographic characteristics, and local health care infrastructure.
 
-Results:
+Results: [TBD]
 
-Conclusions:
+Conclusions: We found that immigration enforcement [is/is not] associated with reduced health care utilization. [Implications for public health and policy TBD]
 
 # Introduction
-
-<!--# Required for midterm -->
 
 Immigration-related fears appear to be negatively affecting health care access in the United States [@KFFSurvey2025]. Recent survey evidence indicates that nearly half (48%) of likely undocumented immigrant adults and 14% of immigrant adults overall report that they or a family member have avoided seeking medical care due to immigration-related concerns. These findings suggest that immigration enforcement may function as a structural barrier to health care access, even for individuals who are not directly targeted by enforcement actions. In January 2025, federal policy changes reversed prior protections that designated hospitals and other health care facilities as “sensitive locations,” limiting enforcement activity in these settings [@DHSStatement2025]. The removal of these protections may plausibly increase fears associated with seeking care, particularly in communities with visible or intensified U.S. Immigration and Customs Enforcement (ICE) activity.
 
@@ -61,13 +59,7 @@ See Appendix A for detailed Python code used in data processing and analysis.
 
 ## Data
 
-<!--# Description of data sources required for midterm. Descriptive statistics added. Add maps?-->
-
 We utilize data on immigration enforcement, health care utilization data, and social determinants of health. Detention Facilities Average Daily Population data is available from the Transactional Records Access Clearinghouse (TRAC) and provides information on the average daily population of ICE detention facilities, broken down by city, state, ZIP code, and date from September 2019 through present [@TRACDetention2025]. This dataset will allow us to measure the intensity of local immigration enforcement activity over time and across geographies. 
-
-<!--# I think we could remove the following paragraph/dataset from our analysis. -->
-
-This Immigration and Customs Enforcement Detention is also available from TRAC and provides monthly counts of individuals detained by ICE at the county level from March 2015 through July 2019 [@TRACDetention2019]. This data also provides counts of individuals detained by ICE by various subgroups, including citizenship status, facility type, when they entered the facility, conviction level, gender, and more. This dataset will complement the first by providing additional granularity on enforcement activity and allowing us to explore potential differential impacts across subpopulations.
 
 Routine checkup within the past year among adults data is available from CDC's PLACES data and provides information on the percentage of adults who reported having a routine checkup within the past year, broken down by county, ZCTA, and year from 2020-2025 [@PLACES2025]. This dataset will serve as our primary outcome variable, allowing us to assess health care utilization patterns in relation to local enforcement intensity.
 
@@ -148,11 +140,66 @@ tbl_summ_stats <- fig_data |>
   filter(skim_type == "numeric") |>
   rename(Variable = skim_variable, "Mean" = numeric_mean, "SD" = numeric_sd) |>
   select(Variable, Mean, SD) |>
-  mutate(across(where(is.numeric), ~ format(., scientific = FALSE, digits = 1))) |> 
-  knitr::kable()
+  mutate(across(where(is.numeric), ~ formatC(., format = "fg", digits = 2))) |>
+  knitr::kable(format = "latex", booktabs = TRUE, longtable = FALSE) |>
+  kableExtra::kable_styling(latex_options = c("hold_position", "scale_down"))
 
 tbl_summ_stats
 ```
+
+@fig-correlation-matrix provides a visual representation of the correlations between a subset of our analysis variables. The population in ICE detention facilities does not seem to be strongly correlated with the rate of doctor visits in a particular area. Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits. @fig-scatterplot-drvisits-vs-avg-dly-pop further shows that there is no identifiable linear correlation between the two variables. ZCTAs with disparate levels of healthcare utilization are distributed relatively evenly across the entire spectrum of detention intensity. This indicates that the operational size of a detention facility, as quantified by Average Daily Population, is likely not a primary driver for the frequency with which a community accesses routine medical care.
+
+```{r}
+#| label: fig-correlation-matrix
+#| fig-cap: "Correlation matrix. Note: Correlations below 0.01 are suppressed."
+#| fig-width: 9
+#| fig-height: 6
+#| echo: false
+#| warning: false
+
+library(corrplot)
+
+corr_matrix <- fig_data |> 
+  rename(
+    "Doctor visits in past year" = `Percent of adults who had a visit with a doctor or other health care professional in the past year`,
+    "Population in ICE detention" = `Percent of population in ICE detention facilities`
+  ) |> 
+  select(
+    "Doctor visits in past year",
+    "Population in ICE detention",
+    "Hispanic/Latino",
+    "White",
+    "Non-citizen",
+    "Household income",
+    "Below poverty line",
+    "Unemployed",
+    "High school education or higher",
+    "Without internet access",
+    "Without a vehicle"
+  ) |> 
+  cor(use = "complete.obs")
+
+# Hide correlations below 0.01 threshold
+corr_matrix[abs(corr_matrix) < 0.01] <- NA
+
+corrplot(
+  corr_matrix,
+  type = "upper",
+  addCoef.col = "black",
+  tl.col = "black",
+  tl.srt = 45,
+  number.cex = 0.8,
+  tl.cex = 1,
+  diag = FALSE,
+  na.label = " ",
+  cl.pos = "n"
+)
+```
+
+![Scatter plot of log ICE Detentions vs. Doctor Visits](./midterm-images/scatterplot-drvisits-vs-avg-dly-pop.png){#fig-scatterplot-drvisits-vs-avg-dly-pop width=100%}
+
+
+
 
 ## Geographic Distribution of Health Care Utilization
 
@@ -204,11 +251,7 @@ ice_max    <- round(max(ice_2023$average_daily_population, na.rm = TRUE), 0)
 
 The spatial distribution of immigration enforcement shown in @fig-map-ice-intensity illustrates the concentrated nature of federal enforcement infrastructure. Unlike general socioeconomic variables that tend to vary gradually across geographies, ICE detentions are highly localized, with a small number of ZCTAs exhibiting extremely high average daily populations (ADP) in detention facilities. The median ADP across ZCTAs is `r ice_median`, indicating what we can see in the map which is that most areas have minimal enforcement activity. However, the 90th percentile ADP is `r ice_90th`, and the maximum ADP reaches `r ice_max`, demonstrating that certain ZCTAs experience disproportionately intense enforcement.
 
-## Correlation Between Enforcement Intensity and Health Care Utilization
 
-![Scatter plot of log ICE Detentions vs. Doctor Visits](./midterm-images/scatterplot-drvisits-vs-avg-dly-pop.png){#fig-scatterplot-drvisits-vs-avg-dly-pop width=100%}
-
-The scatter plot in @fig-scatterplot-drvisits-vs-avg-dly-pop shows that there is no identifiable linear correlation between the two variables. ZCTAs with disparate levels of healthcare utilization are distributed relatively evenly across the entire spectrum of detention intensity. This indicates that the operational size of a detention facility, as quantified by Average Daily Population, is likely not a primary driver for the frequency with which a community accesses routine medical care.
 
 ## Doctor Visits by Citizen Status
 
