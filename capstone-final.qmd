@@ -26,15 +26,15 @@ header-includes:
 
 # Abstract (to be completed for final report)
 
-Background: The removal of "sensitive location" protections and increased ICE activity function can discourage people from seeking medical care by creating fear, stress, and other barriers to accessing health services, including among immigrant communities not directly targeted by enforcement. 
+Background: The removal of "sensitive location" protections and increased ICE activity function can discourage people from seeking medical care by creating fear, stress, and other barriers to accessing health services, including among immigrant communities not directly targeted by enforcement.
 
 Objective: To assess whether increased ICE enforcement correlates with reduced health care utilization.
 
 Methods: We use national datasets on ICE detention activity and health care utilization to analyze the relationship between enforcement intensity and health care utilization across geographies and over time. We will control for potential confounders such as socioeconomic status, demographic characteristics, and local health care infrastructure.
 
-Results: [TBD]
+Results: \[TBD\]
 
-Conclusions: We found that immigration enforcement [is/is not] associated with reduced health care utilization. [Implications for public health and policy TBD]
+Conclusions: We found that immigration enforcement \[is/is not\] associated with reduced health care utilization. \[Implications for public health and policy TBD\]
 
 # Introduction
 
@@ -52,13 +52,11 @@ The mechanisms linking enforcement to reduced care-seeking are increasingly well
 
 While prior studies have well-documented enforcement effects through state-level analyses, provider surveys, and local case studies, comprehensive research examining the relationship on a national scale at granular geographic and temporal levels remains limited. This project addresses this gap by using national datasets on ICE detention activity and health care utilization to analyze the enforcement-utilization relationship across geographies and over time, allowing us to quantify a relationship that prior research has established in principle but not comprehensively measured at scale.
 
-# Methods 
-
-See Appendix A for detailed Python code used in data processing and analysis.
+# Methods
 
 ## Data
 
-We utilize data on immigration enforcement, health care utilization data, and social determinants of health. Detention Facilities Average Daily Population data is available from the Transactional Records Access Clearinghouse (TRAC) and provides information on the average daily population of ICE detention facilities, broken down by city, state, ZIP code, and date from September 2019 through present [@TRACDetention2025]. This dataset will allow us to measure the intensity of local immigration enforcement activity over time and across geographies. 
+We utilize data on immigration enforcement, health care utilization data, and social determinants of health. Detention Facilities Average Daily Population data is available from the Transactional Records Access Clearinghouse (TRAC) and provides information on the average daily population of ICE detention facilities, broken down by city, state, ZIP code, and date from September 2019 through present [@TRACDetention2025]. This dataset will allow us to measure the intensity of local immigration enforcement activity over time and across geographies.
 
 Routine checkup within the past year among adults data is available from CDC's PLACES data and provides information on the percentage of adults who reported having a routine checkup within the past year, broken down by county, ZCTA, and year from 2020-2025 [@PLACES2025]. This dataset will serve as our primary outcome variable, allowing us to assess health care utilization patterns in relation to local enforcement intensity.
 
@@ -72,14 +70,14 @@ We will use data from the American Community Survey (ACS) 5-Year Estimates to co
 library(tidyverse, warn.conflicts = FALSE)
 library(skimr)
 
-panel_data <- read_csv("Data/panel_data.csv", show_col_types = FALSE)
+panel_data <- read_csv("Data/panel_data2.csv", show_col_types = FALSE)
 
 unique_zctas <- panel_data |> 
   distinct(zcta5) |> 
   nrow()
 ```
 
-Our panel data spans from 2018 to 2023 and includes `r format(unique_zctas, big.mark=",")` unique ZIP Code Tabulation Areas (ZCTAs) across the United States. @tbl-descriptive-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities, the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs.
+Our panel data spans from 2018 to 2023 and includes `r format(unique_zctas, big.mark=",")` unique ZIP Code Tabulation Areas (ZCTAs) across the United States. @tbl-descriptive-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities, the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs. See Appendix A for detailed Python code used in data processing and analysis.
 
 ```{r}
 #| label: tbl-descriptive-statistics
@@ -112,7 +110,8 @@ fig_data <- panel_data |>
     pct_unemployed,
     pct_high_school_or_higher,
     pct_no_internet,
-    pct_no_vehicle
+    pct_no_vehicle,
+    miles_to_nearest_facility
     ) |>
   rename(
     "Percent of adults who had a visit with a doctor or other health care professional in the past year" = doctor_visits_past_year,
@@ -129,7 +128,8 @@ fig_data <- panel_data |>
     "Unemployed" = pct_unemployed,
     "High school education or higher" = pct_high_school_or_higher,
     "Without internet access" = pct_no_internet,
-    "Without a vehicle" = pct_no_vehicle
+    "Without a vehicle" = pct_no_vehicle,
+    "Miles to nearest facility" = miles_to_nearest_facility
 )
 
 tbl_summ_stats <- fig_data |>
@@ -195,10 +195,7 @@ corrplot(
 )
 ```
 
-![Scatter plot of log ICE Detentions vs. Doctor Visits](./midterm-images/scatterplot-drvisits-vs-avg-dly-pop.png){#fig-scatterplot-drvisits-vs-avg-dly-pop width=100%}
-
-
-
+![Scatter plot of log ICE Detentions vs. Doctor Visits](./midterm-images/scatterplot-drvisits-vs-avg-dly-pop.png){#fig-scatterplot-drvisits-vs-avg-dly-pop width="100%"}
 
 ## Geographic Distribution of Health Care Utilization
 
@@ -246,47 +243,45 @@ ice_max    <- round(max(ice_2023$average_daily_population, na.rm = TRUE), 0)
 
 ```
 
-![Map of ICE Detentions by ZCTA](./midterm-images/map-ice-intensity.png){#fig-map-ice-intensity width=100%}
+![Map of ICE Detentions by ZCTA](./midterm-images/map-ice-intensity.png){#fig-map-ice-intensity width="100%"}
 
 The spatial distribution of immigration enforcement shown in @fig-map-ice-intensity illustrates the concentrated nature of federal enforcement infrastructure. Unlike general socioeconomic variables that tend to vary gradually across geographies, ICE detentions are highly localized, with a small number of ZCTAs exhibiting extremely high average daily populations (ADP) in detention facilities. The median ADP across ZCTAs is `r ice_median`, indicating what we can see in the map which is that most areas have minimal enforcement activity. However, the 90th percentile ADP is `r ice_90th`, and the maximum ADP reaches `r ice_max`, demonstrating that certain ZCTAs experience disproportionately intense enforcement.
 
-
-
 ## Doctor Visits by Citizen Status
 
-![Box plot of doctor visits by citizenship status where there detainees](./midterm-images/boxplot-dr-visits-by-ha-pop-combined.png){#fig-boxplot-dr-visits-by-citizen-status width=100%}
+![Box plot of doctor visits by citizenship status where there detainees](./midterm-images/boxplot-dr-visits-by-ha-pop-combined.png){#fig-boxplot-dr-visits-by-citizen-status width="100%"}
 
 The box plot in @fig-boxplot-dr-visits-by-citizen-status shows how health care utilization varies by citizenship status across ZCTAs with detention facilities. By comparing the citizen population to the non-citizen population and differentiating between ZCTAs with and without detainees we can see how enforcement may be impacting health care utilization for different subpopulations. It is pretty clear that the median utilization rate decreases as the non-citizen population increases and this pattern is further exacerbated in ZCTAs with detention facilities. This can suggests that the presence of a detention facility may be contributing to reduced health care utilization among non-citizen populations although we cannot rule out that there may be other confounders which may be driving this relationship.
 
 ## Annual Distribution of Detainee Data
 
-![Box plot of average daily population in detention facilities by year](./midterm-images/boxplot-avg-dly-pop-per-year.png){#fig-boxplot-avg-dly-pop-by-year width=100%}
+![Box plot of average daily population in detention facilities by year](./midterm-images/boxplot-avg-dly-pop-per-year.png){#fig-boxplot-avg-dly-pop-by-year width="100%"}
 
 The box plot in @fig-boxplot-avg-dly-pop-by-year shows the distribution of average daily population in detention facilities across ZCTAs for each year from 2019 to 2023. The plot reveals that while the median ADP remains relatively stable across years, there was a slight reduction form 2019 through 2021 but has had a sharp increase in 2022 and 2023. The interquartile range also appears to widen in the later years, suggesting that while many ZCTAs continue to have low ADP, a growing number of ZCTAs are experiencing higher levels of enforcement activity.
 
 ## Demographic differences in healthcare utilization
 
-![Correlation Matrix of doctor visits by year and ethnicity](./midterm-images/corrplot-dr-visits-and-ethnicity.png ){#fig-corrplot-dr-visits-and-ethnicity width=100%}
+![Correlation Matrix of doctor visits by year and ethnicity](./midterm-images/corrplot-dr-visits-and-ethnicity.png){#fig-corrplot-dr-visits-and-ethnicity width="100%"}
 
 The correlation matrix in @fig-corrplot-dr-visits-and-ethnicity above shows the observed correlation between healthcare utilization and demographic compositions of ZCTAs. As we can see, there is a positive correlation between healthcare utilization and the percentage of white and black population. There is a strong negative correlation between healthcare utilization and the percentage of Hispanic/Latino and other populations with a weaker negative correlation with the Asian population. This suggests that ZCTAs with higher proportions of Hispanic/Latino have a propensity for lower healthcare utilization, which may be driven by a variety of factors.
 
 ## Educational attainment and healthcare utilization
 
-![Scatter Plot of Doctor Visits by Education Level - Highschool or Higher](./midterm-images/scatterplot-visits-vs-high-school-rate.png){#fig-scatterplot-visits-vs-high-school-rate width=100%}
+![Scatter Plot of Doctor Visits by Education Level - Highschool or Higher](./midterm-images/scatterplot-visits-vs-high-school-rate.png){#fig-scatterplot-visits-vs-high-school-rate width="100%"}
 
-![Scatter Plot of Doctor Visits by Education Level - Bachelors or Higher](./midterm-images/scatterplot-visits-vs-bach-rate.png){#fig-scatterplot-visits-vs-bach-rate width=100%}
+![Scatter Plot of Doctor Visits by Education Level - Bachelors or Higher](./midterm-images/scatterplot-visits-vs-bach-rate.png){#fig-scatterplot-visits-vs-bach-rate width="100%"}
 
-![Regression Plot of the correlation between doctor visits education rate](./midterm-images/regressionplot-visits-vs-education.png){#fig-regressionplot-visits-vs-education width=100%}
+![Regression Plot of the correlation between doctor visits education rate](./midterm-images/regressionplot-visits-vs-education.png){#fig-regressionplot-visits-vs-education width="100%"}
 
 @fig-scatterplot-visits-vs-high-school-rate and @fig-scatterplot-visits-vs-bach-rate show the relationship between healthcare utilization and educational attainment. Both plots show the observed correlation between the percentage of the population with a high school education or higher and the percentage of adults who had a doctor visit in the past year. The correlation appears to be much stronger for the high school education variable than for the bachelor's degree variable, suggesting that basic educational attainment is much more important of a factor in the population's healthcare utilization than higher education. The regression plot in @fig-regressionplot-visits-vs-education further illustrates this relationship by showing the fitted regression line for the correlation between doctor visits and high school education rate, which shows a clear and strong positive relationship with high school completion rates and almost no relationship with bachelor's degree rates.
 
 ## Economic Drivers and healthcare utilization
 
-![Scatter Plot of Doctor Visits by Median Household Income](./midterm-images/scatterplot-visits-vs-median-income.png){#fig-scatterplot-visits-vs-median-income width=100%}
+![Scatter Plot of Doctor Visits by Median Household Income](./midterm-images/scatterplot-visits-vs-median-income.png){#fig-scatterplot-visits-vs-median-income width="100%"}
 
 The scatter plot in @fig-scatterplot-visits-vs-median-income shows the relationship between healthcare utilization and median household income. The plot reveals that there is a very small positive correlation.
 
-![Scatter Plot of Doctor Visits by Unemployment Rate](./midterm-images/scatterplot-visits-vs-enemployment-rate.png){#fig-scatterplot-visits-vs-unemployment-rate width=100%}
+![Scatter Plot of Doctor Visits by Unemployment Rate](./midterm-images/scatterplot-visits-vs-enemployment-rate.png){#fig-scatterplot-visits-vs-unemployment-rate width="100%"}
 
 In contrast, the scatter plot in @fig-scatterplot-visits-vs-unemployment-rate shows a much stronger negative correlation between healthcare utilization and unemployment rates. This suggests that economic factors, particularly unemployment, may be more significant drivers of healthcare utilization than income levels.
 
