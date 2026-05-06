@@ -42,7 +42,7 @@ Immigration-related fears appear to be negatively affecting health care access i
 
 Motivated by these developments, this project investigates the relationship between immigration enforcement intensity and health care utilization. Specifically, we seek to answer the question: *Does increased ICE enforcement correlate with reduced health care utilization?* We hypothesize that higher levels of local enforcement activity are associated with greater health care avoidance, as individuals may be less willing to leave their homes or engage with formal institutions perceived as potential sites of immigration enforcement.
 
-## Literature Review
+## Background
 
 Empirical research provides strong evidence that immigration enforcement activity reduces health care utilization among immigrant populations. At the state level, Hispanic patients were significantly less likely to report having a regular provider or annual checkup following increased ICE activity, a pattern not observed among non-Hispanic adults [@Friedman2021]. This differential response underscores how enforcement intensity functions as a racialized barrier to care. A more dramatic illustration comes from research on Secure Communities, an immigration enforcement program expanded during the Obama administration from 2008 to 2014, which found that likely authorized Hispanic immigrants experienced a 16.9% decline in the probability of visiting a health care provider compared to non-Hispanic U.S.-born respondents [@Herring2025]. Complementing these state-level findings, a survey of Asian and Latinx immigrants in California demonstrated that each additional direct experience with immigration enforcement was associated with delayed care for both groups [@Young2023].
 
@@ -76,7 +76,6 @@ unique_zcta_count <- panel_data |>
   distinct(zcta5) |> 
   nrow()
 ```
- 
 
 ```{r}
 #| label: tbl-descriptive-statistics
@@ -97,6 +96,8 @@ fig_data <- panel_data |>
   select(
     doctor_visits_past_year, 
     pct_population_in_detention,
+    miles_to_nearest_facility,
+    has_ice_facility,
     pct_hispanic_latino,
     pct_white,
     pct_black,
@@ -109,8 +110,7 @@ fig_data <- panel_data |>
     pct_unemployed,
     pct_high_school_or_higher,
     pct_no_internet,
-    pct_no_vehicle,
-    miles_to_nearest_facility
+    pct_no_vehicle
     ) |>
   rename(
     "Percent of adults who had a visit with a doctor or other health care professional in the past year" = doctor_visits_past_year,
@@ -128,7 +128,8 @@ fig_data <- panel_data |>
     "High school education or higher" = pct_high_school_or_higher,
     "Without internet access" = pct_no_internet,
     "Without a vehicle" = pct_no_vehicle,
-    "Miles to nearest detention facility" = miles_to_nearest_facility
+    "Miles to nearest detention facility" = miles_to_nearest_facility,
+    "Has ICE facility" = has_ice_facility
 )
 
 tbl_summ_stats <- fig_data |>
@@ -157,7 +158,7 @@ ice_median <- round(median(panel_data$average_daily_population, na.rm = TRUE), 1
 ice_max <- round(max(panel_data$average_daily_population, na.rm = TRUE), 1)
 ```
 
-We used Python to build panel data across datasets, geographies, and years. Our panel data spans from 2018 to 2023 and includes `r format(unique_zcta_count, big.mark=",")` unique ZCTAs across the United States. @tbl-descriptive-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities (ADP), the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs. The median of our main outcome variable, `r med_val`%, suggests that for the majority of the United States, annual healthcare engagement is a standard behavior. For most areas of the United States, there are no detention centers (median ADP is `r ice_median`); however, the maximum ADP reaches `r ice_max`, demonstrating that certain areas have a large population in detention facilities. See Appendix A for detailed Python code used in data processing and analysis.
+We used Python to build panel data across datasets, geographies, and years. Our panel data spans from 2018 to 2023 and includes `r format(unique_zcta_count, big.mark=",")` unique ZCTAs across the United States. @tbl-descriptive-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities (ADP), the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs. The median of our main outcome variable, `r med_val`%, suggests that for the majority of the United States, annual healthcare engagement is a standard behavior. For most areas of the United States, there are no detention centers (median ADP is `r ice_median`); however, the maximum ADP reaches `r format(ice_max, big.mark=",")`, demonstrating that certain areas have a large population in detention facilities. See Appendix A for detailed Python code used in data processing and analysis.
 
 ```{r}
 #| label: fig-correlation-matrix
@@ -177,6 +178,8 @@ corr_matrix <- fig_data |>
   select(
     "Doctor visits in past year",
     "Population in ICE detention",
+    "Miles to nearest detention facility",
+    "Has ICE facility",
     "Hispanic/Latino",
     "White",
     "Non-citizen",
@@ -186,7 +189,6 @@ corr_matrix <- fig_data |>
     "High school education or higher",
     "Without internet access",
     "Without a vehicle",
-    "Miles to nearest detention facility"
   ) |> 
   cor(use = "complete.obs")
 
@@ -226,33 +228,57 @@ corr_citizen = doc_visits_corrs |>
 corr_miles = doc_visits_corrs |> 
   filter(rownames(corr_matrix) == "Miles to nearest detention facility") |> 
   pull()
-
 ```
 
-## Exploratory Data Analysis
+To prepare the data for analysis, we used median imputation to handle missingness, log transformed data to address skewness, and feature engineered our main independent variable of interest, ICE enforcement intensity, by creating a binary variable indicating the presence of an ICE detention facility in a ZCTA code (i.e., whether the average daily population in detention facilities is greater than 0). We also created a continuous variable measuring the distance from each ZCTA code to the nearest ICE detention facility. These two variables allow us to capture both the presence and proximity of enforcement activity, which may have distinct effects on health care utilization.
+
+## Modeling
+
+To analyze the relationship between immigration enforcement intensity and health care utilization, we used a a two-way fixed effects (TWFE) panel regression model. We controlled for the following potential confounding socioeconomic and demographic factors: race, citizenship status, poverty status, high school education, employment status, and housing conditions (rent burden, internet and vehicle access). By leveraging panel data from 2018 to 2023, the TWFE model includes ZCTA code-level fixed effects to absorb all time-invariant geographic and demographic heterogeneity. Additionally, year fixed effects are included to control for macro-level shocks affecting all ZCTA codes simultaneously, most notably the COVID-19 pandemic and national federal policy shifts. The resulting coefficients represent the within-ZCTA variation: how changes in ICE presence or distance relative to a ZCTA code's own baseline affect the local rate of routine doctor visits. Standard errors are clustered at the ZCTA code level to account for serial autocorrelation.
+
+We built and assessed three different models to capture different dimensions of enforcement intensity:
+
+1.  **Model 1: ICE Presence** - This model includes the binary variable indicating the presence of an ICE detention facility in a ZCTA code as the main independent variable, controlling for confounders and fixed effects.
+
+2.  **Model 2: Distance to Nearest Facility** - This model includes the continuous variable measuring the distance from each ZCTA code to the nearest ICE detention facility as the main independent variable, controlling for confounders and fixed effects.
+
+3.  **Model 3: Regional Chilling Effect** - This model includes a binary variable indicating whether a ZCTA code is within 50 miles of an ICE detention facility as the main independent variable, controlling for confounders and fixed effects.
+
+We assessed model fit using within R-squared.
+
+## Results
 
 @fig-correlation-matrix provides a visual representation of the correlations between a subset of our analysis variables. The size of the population in ICE detention facilities does not seem to be strongly correlated with the rate of doctor visits in a particular area (r = `r corr_pop_in_ice`). Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits (r = `r corr_hisp` and r = `r corr_citizen`, respectively, suggesting that hispanic/latino folks and non-citizens are less likely to have had a recent doctor's visit). The distance to the nearest ICE detention facility has a slight negative correlation with doctor visits (r = `r corr_miles`), which may suggest that proximity to enforcement activity could be associated with reduced health care utilization, although this relationship is not strong.
 
 <!-- Map of doc visits -->
+
 ![Snapshot of rates of adults who reported a doctor visit within the past year and ICE detention centers, 2023. Note: Some ZCTAs are missing from the data and are left blank.](final-images/map-ice-overlay-doctor-visits.png){#fig-map-ice-overlay-doctor-visits width="60%"}
 
 We visualized a 2023 snapshot geographic distribution of health care utilization and ICE detention centers across the U.S. in @fig-map-ice-overlay-doctor-visits. This map shows that rates of adults' annual doctor visits vary across the country, with higher rates in the southeast, and lower rates in the west, although it should be noted that there is significant missingness in the west of the country. The spatial distribution of ICE detention centers (in red) illustrates the concentrated nature of federal enforcement infrastructure, particularly along the southern border.
 
 <!-- Box plots of detention facility population size -->
+
 ![Box plot of average daily population in detention facilities by year](./final-images/boxplot-avg-dly-pop-per-year.png){#fig-boxplot-avg-dly-pop-by-year width="80%"}
 
 @fig-boxplot-avg-dly-pop-by-year shows that population in detention facilities dropped after 2020, but has been increasing since 2021. The interquartile range also appears to widen in the later years, suggesting that while many ZCTAs continue to have low ADP, a growing number of ZCTAs are experiencing higher levels of enforcement activity.
 
-## Modeling
+```{r}
+#| label: tbl-model-summary
+#| tbl-cap: "Model Summary Results"
+#| echo: false
+#| warning: false
 
-To analyze the relationship between immigration enforcement intensity and health care utilization, we used a a two-way fixed effects (TWFE) panel regression model. We controlled for potential confounding socioeconomic and demographic factors. By leveraging panel data from 2018 to 2023, the TWFE model includes ZCTA code-level fixed effects to absorb all time-invariant geographic and demographic heterogeneity. Additionally, year fixed effects are included to control for macro-level shocks affecting all ZCTA codes simultaneously, most notably the COVID-19 pandemic and national federal policy shifts. The resulting coefficients represent the within-ZCTA variation: how changes in ICE presence or distance relative to a ZCTA code's own baseline affect the local rate of routine doctor visits. Standard errors are clustered at the ZCTA code level to account for serial autocorrelation.
+model_summary_table <- read_csv("Data/model_summary_table.csv")
 
-# Results
+model_summary_table |>
+  knitr::kable(format = "latex", booktabs = TRUE, longtable = FALSE) |>
+  kableExtra::kable_styling(latex_options = c("hold_position", "scale_down")) 
+```
 
-
+@tbl-model-summary provides a summary of the results from our three regression models. The presence of an ICE detention facility in a ZCTA code (Model 1) is associated with a statistically significant decrease in the percentage of adults reporting a doctor visit within the past year, controlling for confounders and fixed effects. The distance to the nearest ICE detention facility (Model 2) also shows a statistically significant negative association with doctor visits, suggesting that closer proximity to enforcement activity is associated with reduced health care utilization. The regional chilling effect model (Model 3) indicates that being within 50 miles of an ICE detention facility is associated with a statistically significant decrease in doctor visits, further supporting the notion that enforcement activity has spillover effects on health care utilization in nearby areas.
 
 # Discussion
 
-# Conclusion 
+# Conclusion
 
 # References
