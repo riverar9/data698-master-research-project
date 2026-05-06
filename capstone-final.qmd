@@ -58,7 +58,7 @@ While prior studies have well-documented enforcement effects through state-level
 
 We utilize data on immigration enforcement, health care utilization data, and social determinants of health. Detention Facilities Average Daily Population data is available from the Transactional Records Access Clearinghouse (TRAC) and provides information on the average daily population of ICE detention facilities, broken down by city, state, ZIP code, and date from September 2019 through present [@TRACDetention2025]. This dataset will allow us to measure the intensity of local immigration enforcement activity over time and across geographies.
 
-Routine checkup within the past year among adults data is available from CDC's PLACES data and provides information on the percentage of adults who reported having a routine checkup within the past year, broken down by county, ZCTA, and year from 2020-2025 [@PLACES2025]. This dataset will serve as our primary outcome variable, allowing us to assess health care utilization patterns in relation to local enforcement intensity.
+Routine checkup within the past year among adults data is available from CDC's PLACES data and provides information on the percentage of adults who reported having a routine checkup within the past year, broken down by county, ZIP Code Tabulation Area (ZCTA), and year from 2020-2025 [@PLACES2025]. This dataset will serve as our primary outcome variable, allowing us to assess health care utilization patterns in relation to local enforcement intensity.
 
 We will use data from the American Community Survey (ACS) 5-Year Estimates to control for social determinants of health in our analysis [@CensusAPI]. This data provides information on social determinants of health at the ZCTA level. Social determinants of health analyzed included race, citizenship status, income, education, employment status, and housing conditions.
 
@@ -72,12 +72,11 @@ library(skimr)
 
 panel_data <- read_csv("Data/panel_data2.csv", show_col_types = FALSE)
 
-unique_zctas <- panel_data |> 
+unique_zcta_count <- panel_data |> 
   distinct(zcta5) |> 
   nrow()
 ```
-
-Our panel data spans from 2018 to 2023 and includes `r format(unique_zctas, big.mark=",")` unique ZIP Code Tabulation Areas (ZCTAs) across the United States. @tbl-descriptive-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities, the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs. See Appendix A for detailed Python code used in data processing and analysis.
+ 
 
 ```{r}
 #| label: tbl-descriptive-statistics
@@ -88,7 +87,7 @@ Our panel data spans from 2018 to 2023 and includes `r format(unique_zctas, big.
 library(tidyverse)
 library(skimr)
 
-panel_data <- read_csv("Data/panel_data.csv") 
+panel_data <- read_csv("Data/panel_data2.csv") 
 
 unique_zctas <- panel_data |> 
   distinct(zcta5) |> 
@@ -129,7 +128,7 @@ fig_data <- panel_data |>
     "High school education or higher" = pct_high_school_or_higher,
     "Without internet access" = pct_no_internet,
     "Without a vehicle" = pct_no_vehicle,
-    "Miles to nearest facility" = miles_to_nearest_facility
+    "Miles to nearest detention facility" = miles_to_nearest_facility
 )
 
 tbl_summ_stats <- fig_data |>
@@ -137,16 +136,28 @@ tbl_summ_stats <- fig_data |>
   janitor::clean_names() |> 
   as_tibble() |>
   filter(skim_type == "numeric") |>
-  rename(Variable = skim_variable, "Mean" = numeric_mean, "SD" = numeric_sd) |>
-  select(Variable, Mean, SD) |>
+  rename(
+    Variable = skim_variable, 
+    Mean = numeric_mean, 
+    SD = numeric_sd,
+    Min = numeric_p0,
+    Median = numeric_p50,
+    Max = numeric_p100
+    ) |>
+  select(Variable, Mean, SD, Min, Median, Max) |>
   mutate(across(where(is.numeric), ~ formatC(., format = "fg", digits = 2))) |>
   knitr::kable(format = "latex", booktabs = TRUE, longtable = FALSE) |>
   kableExtra::kable_styling(latex_options = c("hold_position", "scale_down"))
 
 tbl_summ_stats
+
+# Calculate statistics for the narrative below
+med_val <- round(median(panel_data$doctor_visits_past_year, na.rm = TRUE), 1)
+ice_median <- round(median(panel_data$average_daily_population, na.rm = TRUE), 1)
+ice_max <- round(max(panel_data$average_daily_population, na.rm = TRUE), 1)
 ```
 
-@fig-correlation-matrix provides a visual representation of the correlations between a subset of our analysis variables. The population in ICE detention facilities does not seem to be strongly correlated with the rate of doctor visits in a particular area. Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits. @fig-scatterplot-drvisits-vs-avg-dly-pop further shows that there is no identifiable linear correlation between the two variables. ZCTAs with disparate levels of healthcare utilization are distributed relatively evenly across the entire spectrum of detention intensity. This indicates that the operational size of a detention facility, as quantified by Average Daily Population, is likely not a primary driver for the frequency with which a community accesses routine medical care.
+We used Python to build panel data across datasets, geographies, and years. Our panel data spans from 2018 to 2023 and includes `r format(unique_zcta_count, big.mark=",")` unique ZCTAs across the United States. @tbl-descriptive-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities (ADP), the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs. The median of our main outcome variable, `r med_val`%, suggests that for the majority of the United States, annual healthcare engagement is a standard behavior. For most areas of the United States, there are no detention centers (median ADP is `r ice_median`); however, the maximum ADP reaches `r ice_max`, demonstrating that certain areas have a large population in detention facilities. See Appendix A for detailed Python code used in data processing and analysis.
 
 ```{r}
 #| label: fig-correlation-matrix
@@ -174,7 +185,8 @@ corr_matrix <- fig_data |>
     "Unemployed",
     "High school education or higher",
     "Without internet access",
-    "Without a vehicle"
+    "Without a vehicle",
+    "Miles to nearest detention facility"
   ) |> 
   cor(use = "complete.obs")
 
@@ -193,116 +205,54 @@ corrplot(
   na.label = " ",
   cl.pos = "n"
 )
-```
 
-![Scatter plot of log ICE Detentions vs. Doctor Visits](./midterm-images/scatterplot-drvisits-vs-avg-dly-pop.png){#fig-scatterplot-drvisits-vs-avg-dly-pop width="100%"}
+doc_visits_corrs = corr_matrix |> 
+  as.data.frame() |>
+  select("Doctor visits in past year") |> 
+  mutate(across(everything(), ~ round(., 2)))
 
-## Geographic Distribution of Health Care Utilization
+corr_pop_in_ice = doc_visits_corrs |> 
+  filter(rownames(corr_matrix) == "Population in ICE detention") |> 
+  pull()
 
-The following map visualizes the percentage of adults who reported a doctor visit within the past year at the ZCTA level for 2023.
+corr_hisp = doc_visits_corrs |> 
+  filter(rownames(corr_matrix) == "Hispanic/Latino") |> 
+  pull()
 
-```{r}
-#| label: fig_map_doctor_visits
-#| fig_cap: !expr paste0("Percentage of Doctor Visits in Past Year (2023). The national median utilization rate for routine checkups across all ZCTAs is ", round(median(panel_data$doctor_visits_past_year, na.rm = TRUE), 1), "%.")
-#| out.width: "100%"
-#| echo: false
+corr_citizen = doc_visits_corrs |> 
+  filter(rownames(corr_matrix) == "Non-citizen") |> 
+  pull()
 
-# Filter data for 2023 calculations
-panel_2023 <- panel_data %>% 
-  filter(year == 2023)
-
-# Calculate statistics for the narrative below
-med_val <- round(median(panel_2023$doctor_visits_past_year, na.rm = TRUE), 1)
-q1_val  <- round(quantile(panel_2023$doctor_visits_past_year, 0.25, na.rm = TRUE), 1)
-q3_val  <- round(quantile(panel_2023$doctor_visits_past_year, 0.75, na.rm = TRUE), 1)
-```
-
-![Map of Doctor Visits by ZCTA](midterm-images/map-doctor-visits.png){#fig-map-doctor-visits}
-
-The Map in @fig-map-doctor-visits reveals a stark divide between the national norm and the specific "cold spots" that align with our research hypothesis. The median utilization rate of `r med_val`% suggests that for the majority of the United States, annual healthcare engagement is a standard behavior. The tight interquartile range (`r q1_val`% to `r q3_val`%) indicates that in most ZCTAs, about four out of five adults see a professional yearly. This represents the "health norm" from which the outliers deviate.
-
-Spatial analysis of these outliers reveals significant geographic clustering. While the Northeast and Upper Midwest maintain high utilization, a distinct belt of low healthcare engagement is visible across the Southwest. These regions exhibit rates significantly below the national interquartile range, often falling between 55% and 65%.
-
-## Geographic Distribution of Immigration Enforcement Intensity
-
-```{r}
-#| label: fig_map_ice_intensity
-#| fig_cap: "ICE Enforcement Intensity (2023): Average Daily Population (ADP) in Detention Facilities."
-#| out.width: "100%"
-#| echo: false
-
-# Filter for latest intensity metrics
-ice_2023 <- panel_data %>% 
-  filter(year == 2023)
-
-# Calculate stats for the narrative
-# We use 90th percentile because ICE data is often heavily skewed
-ice_median <- round(median(ice_2023$average_daily_population, na.rm = TRUE), 1)
-ice_90th   <- round(quantile(ice_2023$average_daily_population, 0.90, na.rm = TRUE), 1)
-ice_max    <- round(max(ice_2023$average_daily_population, na.rm = TRUE), 0)
+corr_miles = doc_visits_corrs |> 
+  filter(rownames(corr_matrix) == "Miles to nearest detention facility") |> 
+  pull()
 
 ```
 
-![Map of ICE Detentions by ZCTA](./midterm-images/map-ice-intensity.png){#fig-map-ice-intensity width="100%"}
+## Exploratory Data Analysis
 
-The spatial distribution of immigration enforcement shown in @fig-map-ice-intensity illustrates the concentrated nature of federal enforcement infrastructure. Unlike general socioeconomic variables that tend to vary gradually across geographies, ICE detentions are highly localized, with a small number of ZCTAs exhibiting extremely high average daily populations (ADP) in detention facilities. The median ADP across ZCTAs is `r ice_median`, indicating what we can see in the map which is that most areas have minimal enforcement activity. However, the 90th percentile ADP is `r ice_90th`, and the maximum ADP reaches `r ice_max`, demonstrating that certain ZCTAs experience disproportionately intense enforcement.
+@fig-correlation-matrix provides a visual representation of the correlations between a subset of our analysis variables. The size of the population in ICE detention facilities does not seem to be strongly correlated with the rate of doctor visits in a particular area (r = `r corr_pop_in_ice`). Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits (r = `r corr_hisp` and r = `r corr_citizen`, respectively, suggesting that hispanic/latino folks and non-citizens are less likely to have had a recent doctor's visit). The distance to the nearest ICE detention facility has a slight negative correlation with doctor visits (r = `r corr_miles`), which may suggest that proximity to enforcement activity could be associated with reduced health care utilization, although this relationship is not strong.
 
-## Doctor Visits by Citizen Status
+<!-- Map of doc visits -->
+![Snapshot of rates of adults who reported a doctor visit within the past year and ICE detention centers, 2023. Note: Some ZCTAs are missing from the data and are left blank.](final-images/map-ice-overlay-doctor-visits.png){#fig-map-ice-overlay-doctor-visits width="60%"}
 
-![Box plot of doctor visits by citizenship status where there detainees](./midterm-images/boxplot-dr-visits-by-ha-pop-combined.png){#fig-boxplot-dr-visits-by-citizen-status width="100%"}
+We visualized a 2023 snapshot geographic distribution of health care utilization and ICE detention centers across the U.S. in @fig-map-ice-overlay-doctor-visits. This map shows that rates of adults' annual doctor visits vary across the country, with higher rates in the southeast, and lower rates in the west, although it should be noted that there is significant missingness in the west of the country. The spatial distribution of ICE detention centers (in red) illustrates the concentrated nature of federal enforcement infrastructure, particularly along the southern border.
 
-The box plot in @fig-boxplot-dr-visits-by-citizen-status shows how health care utilization varies by citizenship status across ZCTAs with detention facilities. By comparing the citizen population to the non-citizen population and differentiating between ZCTAs with and without detainees we can see how enforcement may be impacting health care utilization for different subpopulations. It is pretty clear that the median utilization rate decreases as the non-citizen population increases and this pattern is further exacerbated in ZCTAs with detention facilities. This can suggests that the presence of a detention facility may be contributing to reduced health care utilization among non-citizen populations although we cannot rule out that there may be other confounders which may be driving this relationship.
+<!-- Box plots of detention facility population size -->
+![Box plot of average daily population in detention facilities by year](./final-images/boxplot-avg-dly-pop-per-year.png){#fig-boxplot-avg-dly-pop-by-year width="80%"}
 
-## Annual Distribution of Detainee Data
+@fig-boxplot-avg-dly-pop-by-year shows that population in detention facilities dropped after 2020, but has been increasing since 2021. The interquartile range also appears to widen in the later years, suggesting that while many ZCTAs continue to have low ADP, a growing number of ZCTAs are experiencing higher levels of enforcement activity.
 
-![Box plot of average daily population in detention facilities by year](./midterm-images/boxplot-avg-dly-pop-per-year.png){#fig-boxplot-avg-dly-pop-by-year width="100%"}
+## Modeling
 
-The box plot in @fig-boxplot-avg-dly-pop-by-year shows the distribution of average daily population in detention facilities across ZCTAs for each year from 2019 to 2023. The plot reveals that while the median ADP remains relatively stable across years, there was a slight reduction form 2019 through 2021 but has had a sharp increase in 2022 and 2023. The interquartile range also appears to widen in the later years, suggesting that while many ZCTAs continue to have low ADP, a growing number of ZCTAs are experiencing higher levels of enforcement activity.
+To analyze the relationship between immigration enforcement intensity and health care utilization, we used a a two-way fixed effects (TWFE) panel regression model. We controlled for potential confounding socioeconomic and demographic factors. By leveraging panel data from 2018 to 2023, the TWFE model includes ZCTA code-level fixed effects to absorb all time-invariant geographic and demographic heterogeneity. Additionally, year fixed effects are included to control for macro-level shocks affecting all ZCTA codes simultaneously, most notably the COVID-19 pandemic and national federal policy shifts. The resulting coefficients represent the within-ZCTA variation: how changes in ICE presence or distance relative to a ZCTA code's own baseline affect the local rate of routine doctor visits. Standard errors are clustered at the ZCTA code level to account for serial autocorrelation.
 
-## Demographic differences in healthcare utilization
+# Results
 
-![Correlation Matrix of doctor visits by year and ethnicity](./midterm-images/corrplot-dr-visits-and-ethnicity.png){#fig-corrplot-dr-visits-and-ethnicity width="100%"}
 
-The correlation matrix in @fig-corrplot-dr-visits-and-ethnicity above shows the observed correlation between healthcare utilization and demographic compositions of ZCTAs. As we can see, there is a positive correlation between healthcare utilization and the percentage of white and black population. There is a strong negative correlation between healthcare utilization and the percentage of Hispanic/Latino and other populations with a weaker negative correlation with the Asian population. This suggests that ZCTAs with higher proportions of Hispanic/Latino have a propensity for lower healthcare utilization, which may be driven by a variety of factors.
 
-## Educational attainment and healthcare utilization
+# Discussion
 
-![Scatter Plot of Doctor Visits by Education Level - Highschool or Higher](./midterm-images/scatterplot-visits-vs-high-school-rate.png){#fig-scatterplot-visits-vs-high-school-rate width="100%"}
-
-![Scatter Plot of Doctor Visits by Education Level - Bachelors or Higher](./midterm-images/scatterplot-visits-vs-bach-rate.png){#fig-scatterplot-visits-vs-bach-rate width="100%"}
-
-![Regression Plot of the correlation between doctor visits education rate](./midterm-images/regressionplot-visits-vs-education.png){#fig-regressionplot-visits-vs-education width="100%"}
-
-@fig-scatterplot-visits-vs-high-school-rate and @fig-scatterplot-visits-vs-bach-rate show the relationship between healthcare utilization and educational attainment. Both plots show the observed correlation between the percentage of the population with a high school education or higher and the percentage of adults who had a doctor visit in the past year. The correlation appears to be much stronger for the high school education variable than for the bachelor's degree variable, suggesting that basic educational attainment is much more important of a factor in the population's healthcare utilization than higher education. The regression plot in @fig-regressionplot-visits-vs-education further illustrates this relationship by showing the fitted regression line for the correlation between doctor visits and high school education rate, which shows a clear and strong positive relationship with high school completion rates and almost no relationship with bachelor's degree rates.
-
-## Economic Drivers and healthcare utilization
-
-![Scatter Plot of Doctor Visits by Median Household Income](./midterm-images/scatterplot-visits-vs-median-income.png){#fig-scatterplot-visits-vs-median-income width="100%"}
-
-The scatter plot in @fig-scatterplot-visits-vs-median-income shows the relationship between healthcare utilization and median household income. The plot reveals that there is a very small positive correlation.
-
-![Scatter Plot of Doctor Visits by Unemployment Rate](./midterm-images/scatterplot-visits-vs-enemployment-rate.png){#fig-scatterplot-visits-vs-unemployment-rate width="100%"}
-
-In contrast, the scatter plot in @fig-scatterplot-visits-vs-unemployment-rate shows a much stronger negative correlation between healthcare utilization and unemployment rates. This suggests that economic factors, particularly unemployment, may be more significant drivers of healthcare utilization than income levels.
-
-## Analysis (in progress)
-
-We plan to use Python to build panel data across datasets, geographies, and years. We will then use modeling techniques to analyze the relationship between immigration enforcement intensity and health care utilization. We will control for potential confounding factors such as socioeconomic status, demographic characteristics, and local health care infrastructure. We will also explore potential heterogeneity in the relationship by subpopulations, such as by citizenship status or facility type. A potential visualization of our analysis could be a series of maps showing the geographic distribution of enforcement intensity and health care utilization, as well as scatter plots or regression lines illustrating the relationship between these variables.
-
-# Results (in progress)
-
--   Results will identify specific geographic areas in need of health outreach.
-
--   Findings highlight the hidden public health costs of immigration enforcement.
-
--   The study provides evidence for maintaining healthcare facilities as safe zones.
-
--   Research helps clinicians understand why immigrant patients may miss preventive care.
-
-<!--# Should have figures and tables here. -->
-
-# Discussion (in progress)
-
-# Conclusion (in progress)
+# Conclusion 
 
 # References
