@@ -24,7 +24,7 @@ header-includes:
   - \setcounter{secnumdepth}{7}
 ---
 
-# Abstract (to be completed for final report)
+# Abstract
 
 Background: The removal of "sensitive location" protections and increased ICE activity function can discourage people from seeking medical care by creating fear, stress, and other barriers to accessing health services, including among immigrant communities not directly targeted by enforcement.
 
@@ -66,15 +66,14 @@ We will use data from the American Community Survey (ACS) 5-Year Estimates to co
 #| label: unique-zctas
 #| echo: false
 #| warning: false
-
 library(tidyverse, warn.conflicts = FALSE)
 library(skimr)
 
 panel_data <- read_csv("Data/panel_data2.csv", show_col_types = FALSE)
 
-unique_zcta_count <- panel_data |> 
-  distinct(zcta5) |> 
-  nrow()
+unique_zcta_count <- panel_data |>
+    distinct(zcta5) |>
+    nrow()
 ```
 
 ```{r}
@@ -83,78 +82,81 @@ unique_zcta_count <- panel_data |>
 #| echo: false
 #| warning: false
 
-library(tidyverse)
-library(skimr)
+panel_data <- read_csv("Data/panel_data2.csv")
 
-panel_data <- read_csv("Data/panel_data2.csv") 
-
-unique_zctas <- panel_data |> 
-  distinct(zcta5) |> 
-  pull()
+unique_zctas <- panel_data |>
+    distinct(zcta5) |>
+    pull()
 
 fig_data <- panel_data |>
-  select(
-    doctor_visits_past_year, 
-    pct_population_in_detention,
-    miles_to_nearest_facility,
-    has_ice_facility,
-    pct_hispanic_latino,
-    pct_white,
-    pct_black,
-    pct_asian,
-    pct_two_plus,
-    pct_other_race,
-    pct_non_citizen,
-    median_household_income,
-    pct_below_poverty,
-    pct_unemployed,
-    pct_high_school_or_higher,
-    pct_no_internet,
-    pct_no_vehicle
+    select(
+        doctor_visits_past_year,
+        pct_population_in_detention,
+        miles_to_nearest_facility,
+        has_ice_facility,
+        pct_hispanic_latino,
+        pct_white,
+        pct_black,
+        pct_asian,
+        pct_two_plus,
+        pct_other_race,
+        pct_non_citizen,
+        median_household_income,
+        pct_below_poverty,
+        pct_unemployed,
+        pct_high_school_or_higher,
+        pct_no_internet,
+        pct_no_vehicle
     ) |>
-  rename(
-    "Percent of adults who had a visit with a doctor or other health care professional in the past year" = doctor_visits_past_year,
-    "Percent of population in ICE detention facilities" = pct_population_in_detention,
-    "Hispanic/Latino" = pct_hispanic_latino,
-    "White" = pct_white,
-    "Black" = pct_black,
-    "Asian" = pct_asian,
-    "Two or more races" = pct_two_plus,
-    "Other race" = pct_other_race,
-    "Non-citizen" = pct_non_citizen,
-    "Household income" = median_household_income,
-    "Below poverty line" = pct_below_poverty,
-    "Unemployed" = pct_unemployed,
-    "High school education or higher" = pct_high_school_or_higher,
-    "Without internet access" = pct_no_internet,
-    "Without a vehicle" = pct_no_vehicle,
-    "Miles to nearest detention facility" = miles_to_nearest_facility,
-    "Has ICE facility" = has_ice_facility
-)
+    rename(
+        "Percent of adults who had a visit with a doctor or other health care professional in the past year" = doctor_visits_past_year,
+        "Percent of population in ICE detention facilities" = pct_population_in_detention,
+        "Hispanic/Latino" = pct_hispanic_latino,
+        "White" = pct_white,
+        "Black" = pct_black,
+        "Asian" = pct_asian,
+        "Two or more races" = pct_two_plus,
+        "Other race" = pct_other_race,
+        "Non-citizen" = pct_non_citizen,
+        "Household income" = median_household_income,
+        "Below poverty line" = pct_below_poverty,
+        "Unemployed" = pct_unemployed,
+        "High school education or higher" = pct_high_school_or_higher,
+        "Without internet access" = pct_no_internet,
+        "Without a vehicle" = pct_no_vehicle,
+        "Miles to nearest detention facility" = miles_to_nearest_facility,
+        "Has ICE facility" = has_ice_facility
+    )
 
 tbl_summ_stats <- fig_data |>
-  skim_without_charts() |> 
-  janitor::clean_names() |> 
-  as_tibble() |>
-  filter(skim_type == "numeric") |>
-  rename(
-    Variable = skim_variable, 
-    Mean = numeric_mean, 
-    SD = numeric_sd,
-    Min = numeric_p0,
-    Median = numeric_p50,
-    Max = numeric_p100
+    skim_without_charts() |>
+    janitor::clean_names() |>
+    as_tibble() |>
+    filter(skim_type == "numeric") |>
+    rename(
+        Variable = skim_variable,
+        Mean = numeric_mean,
+        SD = numeric_sd,
+        Min = numeric_p0,
+        Median = numeric_p50,
+        Max = numeric_p100
     ) |>
-  select(Variable, Mean, SD, Min, Median, Max) |>
-  mutate(across(where(is.numeric), ~ formatC(., format = "fg", digits = 2))) |>
-  knitr::kable(format = "latex", booktabs = TRUE, longtable = FALSE) |>
-  kableExtra::kable_styling(latex_options = c("hold_position", "scale_down"))
+    select(Variable, Mean, SD, Min, Median, Max) |>
+    mutate(across(
+        where(is.numeric),
+        ~ formatC(., format = "fg", digits = 2)
+    )) |>
+    knitr::kable(format = "latex", booktabs = TRUE, longtable = FALSE) |>
+    kableExtra::kable_styling(latex_options = c("hold_position", "scale_down"))
 
 tbl_summ_stats
 
 # Calculate statistics for the narrative below
 med_val <- round(median(panel_data$doctor_visits_past_year, na.rm = TRUE), 1)
-ice_median <- round(median(panel_data$average_daily_population, na.rm = TRUE), 1)
+ice_median <- round(
+    median(panel_data$average_daily_population, na.rm = TRUE),
+    1
+)
 ice_max <- round(max(panel_data$average_daily_population, na.rm = TRUE), 1)
 ```
 
@@ -167,67 +169,66 @@ We used Python to build panel data across datasets, geographies, and years. Our 
 #| fig-height: 6
 #| echo: false
 #| warning: false
-
 library(corrplot)
 
-corr_matrix <- fig_data |> 
-  rename(
-    "Doctor visits in past year" = `Percent of adults who had a visit with a doctor or other health care professional in the past year`,
-    "Population in ICE detention" = `Percent of population in ICE detention facilities`
-  ) |> 
-  select(
-    "Doctor visits in past year",
-    "Population in ICE detention",
-    "Miles to nearest detention facility",
-    "Has ICE facility",
-    "Hispanic/Latino",
-    "White",
-    "Non-citizen",
-    "Household income",
-    "Below poverty line",
-    "Unemployed",
-    "High school education or higher",
-    "Without internet access",
-    "Without a vehicle",
-  ) |> 
-  cor(use = "complete.obs")
+corr_matrix <- fig_data |>
+    rename(
+        "Doctor visits in past year" = `Percent of adults who had a visit with a doctor or other health care professional in the past year`,
+        "Population in ICE detention" = `Percent of population in ICE detention facilities`
+    ) |>
+    select(
+        "Doctor visits in past year",
+        "Population in ICE detention",
+        "Miles to nearest detention facility",
+        "Has ICE facility",
+        "Hispanic/Latino",
+        "White",
+        "Non-citizen",
+        "Household income",
+        "Below poverty line",
+        "Unemployed",
+        "High school education or higher",
+        "Without internet access",
+        "Without a vehicle",
+    ) |>
+    cor(use = "complete.obs")
 
 # Hide correlations below 0.01 threshold
 corr_matrix[abs(corr_matrix) < 0.01] <- NA
 
 corrplot(
-  corr_matrix,
-  type = "upper",
-  addCoef.col = "black",
-  tl.col = "black",
-  tl.srt = 45,
-  number.cex = 0.8,
-  tl.cex = 1,
-  diag = FALSE,
-  na.label = " ",
-  cl.pos = "n"
+    corr_matrix,
+    type = "upper",
+    addCoef.col = "black",
+    tl.col = "black",
+    tl.srt = 45,
+    number.cex = 0.8,
+    tl.cex = 1,
+    diag = FALSE,
+    na.label = " ",
+    cl.pos = "n"
 )
 
-doc_visits_corrs = corr_matrix |> 
-  as.data.frame() |>
-  select("Doctor visits in past year") |> 
-  mutate(across(everything(), ~ round(., 2)))
+doc_visits_corrs = corr_matrix |>
+    as.data.frame() |>
+    select("Doctor visits in past year") |>
+    mutate(across(everything(), ~ round(., 2)))
 
-corr_pop_in_ice = doc_visits_corrs |> 
-  filter(rownames(corr_matrix) == "Population in ICE detention") |> 
-  pull()
+corr_pop_in_ice = doc_visits_corrs |>
+    filter(rownames(corr_matrix) == "Population in ICE detention") |>
+    pull()
 
-corr_hisp = doc_visits_corrs |> 
-  filter(rownames(corr_matrix) == "Hispanic/Latino") |> 
-  pull()
+corr_hisp = doc_visits_corrs |>
+    filter(rownames(corr_matrix) == "Hispanic/Latino") |>
+    pull()
 
-corr_citizen = doc_visits_corrs |> 
-  filter(rownames(corr_matrix) == "Non-citizen") |> 
-  pull()
+corr_citizen = doc_visits_corrs |>
+    filter(rownames(corr_matrix) == "Non-citizen") |>
+    pull()
 
-corr_miles = doc_visits_corrs |> 
-  filter(rownames(corr_matrix) == "Miles to nearest detention facility") |> 
-  pull()
+corr_miles = doc_visits_corrs |>
+    filter(rownames(corr_matrix) == "Miles to nearest detention facility") |>
+    pull()
 ```
 
 To prepare the data for analysis, we used median imputation to handle missingness, log transformed data to address skewness, and feature engineered our main independent variable of interest, ICE enforcement intensity, by creating a binary variable indicating the presence of an ICE detention facility in a ZCTA code (i.e., whether the average daily population in detention facilities is greater than 0). We also created a continuous variable measuring the distance from each ZCTA code to the nearest ICE detention facility. These two variables allow us to capture both the presence and proximity of enforcement activity, which may have distinct effects on health care utilization.
@@ -248,7 +249,7 @@ We assessed model fit using within R-squared.
 
 ## Results
 
-@fig-correlation-matrix provides a visual representation of the correlations between a subset of our analysis variables. The size of the population in ICE detention facilities does not seem to be strongly correlated with the rate of doctor visits in a particular area (r = `r corr_pop_in_ice`). Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits (r = `r corr_hisp` and r = `r corr_citizen`, respectively, suggesting that hispanic/latino folks and non-citizens are less likely to have had a recent doctor's visit). The distance to the nearest ICE detention facility has a slight negative correlation with doctor visits (r = `r corr_miles`), which may suggest that proximity to enforcement activity could be associated with reduced health care utilization, although this relationship is not strong.
+@fig-correlation-matrix provides a visual representation of the correlations between a subset of our analysis variables. The size of the population in ICE detention facilities does not seem to be strongly correlated with the rate of doctor visits in a particular area (r = `r corr_pop_in_ice`). Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits (r = `r corr_hisp` and r = `r corr_citizen`, respectively, suggesting that Hispanic/Latino folks and non-citizens are less likely to have had a recent doctor's visit). The distance to the nearest ICE detention facility has a slight negative correlation with doctor visits (r = `r corr_miles`), which may suggest that proximity to enforcement activity could be associated with reduced health care utilization, although this relationship is not strong.
 
 <!-- Map of doc visits -->
 
@@ -267,18 +268,23 @@ We visualized a 2023 snapshot geographic distribution of health care utilization
 #| tbl-cap: "Model Summary Results"
 #| echo: false
 #| warning: false
+library(kableExtra)
 
 model_summary_table <- read_csv("Data/model_summary_table.csv")
 
 model_summary_table |>
-  knitr::kable(format = "latex", booktabs = TRUE, longtable = FALSE) |>
-  kableExtra::kable_styling(latex_options = c("hold_position", "scale_down")) 
+    knitr::kable(format = "latex", booktabs = TRUE, longtable = FALSE) |>
+    kableExtra::kable_styling(latex_options = c("hold_position", "scale_down"))
 ```
 
-@tbl-model-summary provides a summary of the results from our three regression models. The presence of an ICE detention facility in a ZCTA code (Model 1) is associated with a statistically significant decrease in the percentage of adults reporting a doctor visit within the past year, controlling for confounders and fixed effects. The distance to the nearest ICE detention facility (Model 2) also shows a statistically significant negative association with doctor visits, suggesting that closer proximity to enforcement activity is associated with reduced health care utilization. The regional chilling effect model (Model 3) indicates that being within 50 miles of an ICE detention facility is associated with a statistically significant decrease in doctor visits, further supporting the notion that enforcement activity has spillover effects on health care utilization in nearby areas.
+@tbl-model-summary provides a summary of the results from our three regression models.
 
 # Discussion
 
+Limitations:
+
 # Conclusion
+
+We conclude that..
 
 # References
