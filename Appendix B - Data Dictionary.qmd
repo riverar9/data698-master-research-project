@@ -1,0 +1,101 @@
+---
+title: "Appendix B - Data Dictionary"
+format: pdf
+author:
+  - name: Naomi Buell
+  - name: Richie Rivera
+date: April 19, 2026
+documentclass: article
+classoption: 12pt
+geometry:
+  - margin=1in
+header-includes:
+  - \usepackage{fancyhdr}
+  - \usepackage{setspace}
+  - \onehalfspacing
+  - \pagestyle{fancy}
+  - \lhead{DATA 698}
+  - \rhead{Naomi Buell, Richie Rivera}
+  - \setcounter{secnumdepth}{7}
+---
+
+This section provides definitions of all metrics used in the analysis, organized by data source.
+
+doctor_visits_past_year
+
+:   Routine checkup within the past year among adults.
+
+doctor_visits_past_year: Routine checkup within the past year among adults.
+
+## CDC PLACES: Routine Checkup Within the Past Year Among Adults
+
+**Primary Outcome Variable**
+
+### Metric: Routine Doctor Visit Rate
+
+-   **Full Name**: Percentage of adults aged 18 and older who reported having a routine checkup within the past year
+-   **Variable Name** (in cleaned data): `doctor_visits_past_year`
+-   **Data Type**: Percentage (0-100)
+-   **What It Measures**: Healthcare utilization rate; the proportion of the adult population that accessed preventive healthcare services through routine medical checkups
+-   **Geographic Levels**: County, ZIP Code Tabulation Area (ZCTA), and Census Tract
+-   **Temporal Coverage**: Data years 2018-2023 (released in 2020-2025 respectively)
+-   **Source**: Behavioral Risk Factor Surveillance System (BRFSS) survey data collected by CDC
+-   **Frequency**: Annual (one observation per geographic unit per year)
+-   **Additional Metadata Included**: Total population, state, location identifiers
+
+## Census: SDOH data
+
+-   pct_white: B02001_002E / B02001_001E
+-   pct_black: B02001_003E / B02001_001E
+-   pct_asian: B02001_004E / B02001_001E
+-   pct_two_plus: B02001_008E / B02001_001E
+-   pct_other_race: B02001_007E / B02001_001E
+-   pct_hispanic_latino: B03003_003E / B03003_001E
+-   pct_non_hispanic_latino: B03003_002E / B03003_001E
+-   pct_naturalized: B05001_005E / B05001_001E
+-   pct_non_citizen: B05001_006E / B05001_001E
+-   pct_citizen: 1 - B05001_006E / B05001_001E
+-   median_household_income: B19013_001E
+-   pct_below_poverty: B17001_002E / B17001_001E
+-   pct_bachelors_plus: (B15003_022E + B15003_023E + B15003_024E + B15003_025E) / B15003_001E
+-   pct_high_school_or_higher: (B15003_022E + B15003_023E + B15003_024E + B15003_025E + B15003_017E) / B15003_001E
+-   pct_unemployed: B23025_005E / B23025_003E
+-   pct_rent_burdened_30_plus: (B25070_007E + B25070_008E + B25070_009E + B25070_010E) / B25070_001E
+-   pct_no_internet: B28002_013E / B28002_001E
+-   pct_no_vehicle: B08201_002E / B08201_001E
+
+## TRAC Detention Facilities Data (2019-2026)
+
+**Immigration Enforcement Intensity Metrics**
+
+### Metric 1: Average Daily Population (ADP)
+
+-   **Full Name**: Average Daily Population at ICE Detention Facilities
+-   **Variable Name** (in cleaned data): `average_daily_population` (or similar)
+-   **Data Type**: Count (number of individuals)
+-   **What It Measures**: The average number of individuals detained on any given day at a specific ICE detention facility; a measure of detention facility utilization and enforcement intensity
+-   **Geographic Level**: ZIP Code (facility location)
+-   **Temporal Coverage**: September 30, 2019 - February 5, 2026 (multiple time points)
+-   **Source**: TRAC (Transactional Records Access Clearinghouse), retrieved March 19, 2026
+-   **Frequency**: Periodic snapshots (specific dates, not continuous daily data)
+-   **Additional Metadata Included**: Facility name, state, zip code, current date
+
+### Metric 2: Current Guaranteed Minimum (dropped)
+
+-   **Full Name**: Current Guaranteed Minimum Detainee Population
+-   **Data Type**: Count (number of individuals)
+-   **What It Measures**: Minimum number of detainees that detention facilities are contractually obligated to maintain
+-   **Status**: Dropped during data cleaning due to excessive missing values
+-   **Note**: Not used in final analysis
+
+## Summary of Key Variables
+
+| Data Source | Primary Metric | Unit | Geography | Time Period | Frequency |
+|------------|------------|------------|------------|------------|------------|
+| CDC PLACES | Routine doctor visit rate | Percentage (%) | County, ZCTA, Census Tract | 2018-2023 | Annual |
+| TRAC Detention Facilities | Average daily population | Count | ZIP Code | Sept 2019 - Feb 2026 | Periodic |
+| TRAC ICE Detention | Monthly detention counts (by demographics) | Count | County | Mar 2015 - Jul 2019 | Monthly |
+
+## Analysis Design Note
+
+The primary analysis leverages the **CDC PLACES routine checkup rate** as the dependent variable (healthcare utilization outcome) and the **TRAC detention facilities average daily population** as the primary independent variable (immigration enforcement intensity), merged at the ZIP code and year level to create a panel dataset for regression analysis. The **TRAC ICE Detention demographic metrics** provide detailed subgroup analysis capabilities to examine differential impacts across citizenship status, legal status, criminal history, and demographic characteristics.
