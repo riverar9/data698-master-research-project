@@ -21,80 +21,117 @@ header-includes:
 
 This section provides definitions of all metrics used in the analysis, organized by data source.
 
-doctor_visits_past_year
+# Primary Outcome Variable (Source: CDC PLACES)
 
-:   Routine checkup within the past year among adults.
+`doctor_visits_past_year`
 
-doctor_visits_past_year: Routine checkup within the past year among adults.
+:   Percent of the population who had a routine checkup within the past year among adults.
 
-## CDC PLACES: Routine Checkup Within the Past Year Among Adults
+# Geographic and Temporal Identifiers (Source: CDC PLACES)
 
-**Primary Outcome Variable**
+`year`
 
-### Metric: Routine Doctor Visit Rate
+:   Calendar year of observation (2018-2023)
 
--   **Full Name**: Percentage of adults aged 18 and older who reported having a routine checkup within the past year
--   **Variable Name** (in cleaned data): `doctor_visits_past_year`
--   **Data Type**: Percentage (0-100)
--   **What It Measures**: Healthcare utilization rate; the proportion of the adult population that accessed preventive healthcare services through routine medical checkups
--   **Geographic Levels**: County, ZIP Code Tabulation Area (ZCTA), and Census Tract
--   **Temporal Coverage**: Data years 2018-2023 (released in 2020-2025 respectively)
--   **Source**: Behavioral Risk Factor Surveillance System (BRFSS) survey data collected by CDC
--   **Frequency**: Annual (one observation per geographic unit per year)
--   **Additional Metadata Included**: Total population, state, location identifiers
+`totalpopulation`
 
-## Census: SDOH data
+:   Total population of the ZCTA.
 
--   pct_white: B02001_002E / B02001_001E
--   pct_black: B02001_003E / B02001_001E
--   pct_asian: B02001_004E / B02001_001E
--   pct_two_plus: B02001_008E / B02001_001E
--   pct_other_race: B02001_007E / B02001_001E
--   pct_hispanic_latino: B03003_003E / B03003_001E
--   pct_non_hispanic_latino: B03003_002E / B03003_001E
--   pct_naturalized: B05001_005E / B05001_001E
--   pct_non_citizen: B05001_006E / B05001_001E
--   pct_citizen: 1 - B05001_006E / B05001_001E
--   median_household_income: B19013_001E
--   pct_below_poverty: B17001_002E / B17001_001E
--   pct_bachelors_plus: (B15003_022E + B15003_023E + B15003_024E + B15003_025E) / B15003_001E
--   pct_high_school_or_higher: (B15003_022E + B15003_023E + B15003_024E + B15003_025E + B15003_017E) / B15003_001E
--   pct_unemployed: B23025_005E / B23025_003E
--   pct_rent_burdened_30_plus: (B25070_007E + B25070_008E + B25070_009E + B25070_010E) / B25070_001E
--   pct_no_internet: B28002_013E / B28002_001E
--   pct_no_vehicle: B08201_002E / B08201_001E
+`geolocation`
 
-## TRAC Detention Facilities Data (2019-2026)
+:   Latitude and longitude coordinates of the ZCTA centroid.
 
-**Immigration Enforcement Intensity Metrics**
+`zcta5`
 
-### Metric 1: Average Daily Population (ADP)
+:   5-digit ZIP Code Tabulation Area (ZCTA) code.
 
--   **Full Name**: Average Daily Population at ICE Detention Facilities
--   **Variable Name** (in cleaned data): `average_daily_population` (or similar)
--   **Data Type**: Count (number of individuals)
--   **What It Measures**: The average number of individuals detained on any given day at a specific ICE detention facility; a measure of detention facility utilization and enforcement intensity
--   **Geographic Level**: ZIP Code (facility location)
--   **Temporal Coverage**: September 30, 2019 - February 5, 2026 (multiple time points)
--   **Source**: TRAC (Transactional Records Access Clearinghouse), retrieved March 19, 2026
--   **Frequency**: Periodic snapshots (specific dates, not continuous daily data)
--   **Additional Metadata Included**: Facility name, state, zip code, current date
+# Control Variables (Source: Census ACS 5-year estimates)
 
-### Metric 2: Current Guaranteed Minimum (dropped)
+`pct_white`
 
--   **Full Name**: Current Guaranteed Minimum Detainee Population
--   **Data Type**: Count (number of individuals)
--   **What It Measures**: Minimum number of detainees that detention facilities are contractually obligated to maintain
--   **Status**: Dropped during data cleaning due to excessive missing values
--   **Note**: Not used in final analysis
+:   Percentage of the population that identifies as white.
 
-## Summary of Key Variables
+`pct_black`
 
-| Data Source | Primary Metric | Unit | Geography | Time Period | Frequency |
-|------------|------------|------------|------------|------------|------------|
-| CDC PLACES | Routine doctor visit rate | Percentage (%) | County, ZCTA, Census Tract | 2018-2023 | Annual |
-| TRAC Detention Facilities | Average daily population | Count | ZIP Code | Sept 2019 - Feb 2026 | Periodic |
-| TRAC ICE Detention | Monthly detention counts (by demographics) | Count | County | Mar 2015 - Jul 2019 | Monthly |
+:   Percentage of the population that identifies as Black.
+
+`pct_asian`
+
+:   Percentage of the population that identifies as Asian.
+
+`pct_two_plus`
+
+:   Percentage of the population that identifies as two or more races.
+
+`pct_other_race`
+
+:   Percentage of the population that identifies as another race.
+
+`pct_hispanic_latino`
+
+:   Percentage of the population that identifies as Hispanic or Latino.
+
+`pct_non_citizen`
+
+:   Percentage of the population that is not a U.S. citizen.
+
+`median_household_income`
+
+:   Median household income in the ZCTA.
+
+`pct_below_poverty`
+
+:   Percentage of the population living below the federal poverty line.
+
+`pct_bachelors_plus`
+
+:   Percentage of the population with a bachelor's degree or higher.
+
+`pct_high_school_or_higher`
+
+:   Percentage of the population with a high school diploma or higher.
+
+`pct_unemployed`
+
+:   Percentage of the population that is unemployed.
+
+`rent_burdened_30_plus`
+
+:   Percentage of renter-occupied housing units where the gross rent is 30% or more of household income.
+
+`pct_no_internet`
+
+:   Percentage of households with no internet access.
+
+`pct_no_vehicle`
+
+:   Percentage of households with no vehicle available.
+
+# Primary Predictor Variables (Source: TRAC ICE Detention)
+
+`average_daily_population`
+
+:   Average daily population at ICE detention facilities.
+
+`log_average_daily_population`
+
+:   Natural logarithm of the average daily population at ICE detention facilities (used to account for skewness in count data).
+
+`pct_population_in_detention`
+
+:   Percentage of the population in a ZCTA that is currently detained in an ICE detention facility.
+
+`miles_to_nearest_facility`
+
+:   Distance in miles from the ZCTA centroid to the nearest ICE detention facility.
+
+`log_miles_to_facility`
+
+:   Natural logarithm of the distance in miles from the ZCTA centroid to the nearest ICE detention facility (used to account for skewness in distance data).
+
+`has_ice_facility`
+
+:   Binary indicator of whether there is an ICE detention facility located within the ZCTA (1 = yes, 0 = no).
 
 ## Analysis Design Note
 

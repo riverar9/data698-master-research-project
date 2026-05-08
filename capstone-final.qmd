@@ -265,23 +265,50 @@ We visualized a 2023 snapshot geographic distribution of health care utilization
 
 ```{r}
 #| label: tbl-model-summary
-#| tbl-cap: "Model Summary Results"
+#| tbl-cap: "Summary of Model Results (N = 185,504)"
 #| echo: false
 #| warning: false
 library(kableExtra)
+library(janitor)
 
 model_summary_table <- read_csv("Data/model_summary_table.csv")
 
 model_summary_table |>
+    clean_names()  |> 
+    mutate(
+        "Coefficient (95% CI)" = paste0(
+            coef_w_stars,
+            " (",
+            round(x95_percent_ci_lower, 3),
+            ", ",
+            round(x95_percent_ci_upper, 3),
+            ")"
+        )
+    ) |> 
+    rename(
+        "Model" = model,
+        "P-value" = p_value,
+        "R-squared (Within)" = r_squared_within
+    ) |>
+    select(
+        Model, 
+        "Coefficient (95% CI)", 
+        "P-value", 
+        "R-squared (Within)"
+        ) |>
     knitr::kable(format = "latex", booktabs = TRUE, longtable = FALSE) |>
     kableExtra::kable_styling(latex_options = c("hold_position", "scale_down"))
+
+model_1_p = model_summary_table |>
+    filter(Model == "Model 1: ICE Presence") |>
+    pull("P-value")
 ```
 
-@tbl-model-summary provides a summary of the results from our three regression models.
+@tbl-model-summary provides a summary of the results from our three regression models. The first model, which estimates the effect of the presence of an ICE detention facility in a ZCTA on doctor visits, shows a negative, but insignificant impact (p = `r model_1_p`). The second model, which estimates the effect of...
 
 # Discussion
 
-Limitations:
+This study has several limitations...
 
 # Conclusion
 
