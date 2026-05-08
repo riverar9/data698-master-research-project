@@ -32,5 +32,5 @@ pip install -r py-requirements.txt
 
 *Tip: To exit the virtual environment when you are done, simply run the command deactivate.*
 
-A document for notes sharing and collaboraiton can be found here:
-https://docs.google.com/document/d/1-1Bte1qaL4INa-D7judeCcjxUVgT_y6mYSkXMHHOw-c/edit?tab=t.0
+Powerpoint presentation here:
+https://docs.google.com/presentation/d/1zLCfP-Y5SwLP5Qj38TW9WikB-J_3pHrjlQlBf5xUYE4/edit?slide=id.g34c462e2c2a_1_0#slide=id.g34c462e2c2a_1_0
