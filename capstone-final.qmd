@@ -308,7 +308,7 @@ model_1_p = model_summary_table |>
 
 # Discussion
 
-This study has several limitations...
+This study has several limitations. First, we did not account for access to health care facilities in our models (e.g., distance to the nearest hospital or clinic), which may confound the relationship between enforcement and health care utilization. Second, our outcome data contain significant geographic missingness, particularly in Kentucky, Pennsylvania, and much of the western United States, which may introduce bias. Third, very few ZCTAs have a detention facility present, so the data are highly unbalanced and most observations have no ICE detention facility nearby. This limited exposure variation makes it harder to identify stable effects and may reduce statistical power. Finally, our main independent variable—the presence of an ICE detention facility—is a relatively blunt measure of enforcement intensity and may not capture the full range of enforcement activities affecting health care utilization, such as local raids or workplace enforcement operations. Future research should incorporate more granular measures of enforcement activity, including local ICE raids and workplace enforcement actions, along with additional controls for health care access such as hospital proximity and provider availability. Improving data completeness and geographic coverage would also strengthen the robustness of future analyses.
 
 # Conclusion
 
