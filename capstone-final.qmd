@@ -326,9 +326,9 @@ Rather than disproving the existence of enforcement-related fear, this strong po
 
 ![Population differences between ZCTAs with and without ICE facilities](./final-images/boxplot-population-ice.png){#fig-boxplot-population-ice width="80%"}
 
-@fig-boxplot-population-ice illustrates the stark population differences between ZCTAs with and without ICE facilities. The median population of ZCTAs with an ICE facility is 21,212, while the median population of ZCTAs without an ICE facility is 2,985. This great difference does lend support to the idea that the positive association between proximity to an ICE facility and healthcare utilization is likely driven by the confounding influence of urbanicity and healthcare infrastructure, rather than a true "chilling effect." The presence of an ICE facility is likely acting as a proxy for being in or near a metropolitan area with greater healthcare access, which could explain the positive association observed in the spatial models.
+@fig-boxplot-population-ice illustrates the stark population differences between ZCTAs with and without ICE facilities. The median population of ZCTAs with an ICE facility is 21,212, while the median population of ZCTAs without an ICE facility is 2,985. This great difference does lend support to the idea that the positive association between proximity to an ICE facility and healthcare utilization is likely driven by the confounding influence of urbanicity and healthcare infrastructure, rather than a true "chilling effect." The presence of an ICE facility is likely acting as a proxy for being in or near a $metropolitan area with greater healthcare access, which could explain the positive association observed in the spatial models.
 
-::: Naomi Callout - So our R^2 within isn't really applicable for the 2nd, 3rd, and 4th models because we do not use entity effects (in the ipynb this is entity_effects=false). This was turned off because the distance between the ZCTA and the nearest ICE facility does not change with year (static).  
+::: Naomi Callout - So our R^2 within isn't really applicable for the 2nd, 3rd, and 4th models because we do not use entity effects (in the ipynb this is entity_effects=false). This was turned off because the distance between the ZCTA and the nearest ICE facility does not change with year (static). 
 
 
 # Discussion
