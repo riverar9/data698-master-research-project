@@ -286,7 +286,7 @@ In longitudinal panel data, observations within the same geographic unit over ti
 
 ## Results
 
-@fig-correlation-matrix provides a visual representation of the correlations between a subset of our analysis variables. The size of the population in ICE detention facilities does not seem to be strongly correlated with the rate of doctor visits in a particular area (r = `r corr_pop_in_ice`). Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits (r = `r corr_hisp` and r = `r corr_citizen`, respectively, suggesting that Hispanic/Latino folks and non-citizens are less likely to have had a recent doctor's visit). The distance to the nearest ICE detention facility has a slight negative correlation with doctor visits (r = `r corr_miles`), which may suggest that proximity to enforcement activity could be associated with reduced health care utilization, although this relationship is not strong.
+@fig-correlation-matrix provides a visual representation of the correlations between a subset of our analysis variables. The size of the population in ICE detention facilities does not seem correlated with the rate of doctor visits in a particular area (r = `r corr_pop_in_ice`). Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits (r = `r corr_hisp` and r = `r corr_citizen`, respectively, suggesting that Hispanic/Latino folks and non-citizens are less likely to have had a recent doctor's visit). The distance to the nearest ICE detention facility has a slight negative correlation with doctor visits (r = `r corr_miles`), which may suggest that proximity to enforcement activity could be associated with reduced health care utilization, although this relationship is not strong.
 
 <!-- Map of doc visits -->
 
@@ -302,21 +302,16 @@ We visualized a 2023 snapshot geographic distribution of health care utilization
 
 ```{r}
 #| label: tbl-model-summary
-#| tbl-cap: "Summary of Model Results (N = 185,504)"
+#| tbl-cap: "Model Summary Results"
 #| echo: false
 #| warning: false
 library(kableExtra)
-library(janitor)
 
 model_summary_table <- read_csv("Data/model_summary_table.csv")
 
 model_summary_table |>
     knitr::kable(format = "latex", booktabs = TRUE, longtable = FALSE) |>
     kableExtra::kable_styling(latex_options = c("hold_position", "scale_down"))
-
-model_1_p = model_summary_table |>
-    filter(Model == "Model 1: ICE Presence") |>
-    pull("P-value")
 ```
 
 @tbl-model-summary provides a summary of the results from our four spatial and temporal regression models. As expected in highly granular geographic panel data, the explanatory power of the time-varying predictors is minimal once fixed effects are applied. Model 1 yields a Within R-squared of effectively zero (-0.008). This indicates that the vast majority of the variance in healthcare utilization is cross-sectional (between different ZCTAs) and driven by national temporal shocks (the pandemic), rather than year-to-year within-ZCTA fluctuations in enforcement or demographics.
@@ -333,7 +328,7 @@ Rather than disproving the existence of enforcement-related fear, this strong po
 
 @fig-boxplot-population-ice illustrates the stark population differences between ZCTAs with and without ICE facilities. The median population of ZCTAs with an ICE facility is 21,212, while the median population of ZCTAs without an ICE facility is 2,985. This great difference does lend support to the idea that the positive association between proximity to an ICE facility and healthcare utilization is likely driven by the confounding influence of urbanicity and healthcare infrastructure, rather than a true "chilling effect." The presence of an ICE facility is likely acting as a proxy for being in or near a metropolitan area with greater healthcare access, which could explain the positive association observed in the spatial models.
 
-::: Naomi Callout - So our R^2 within isn't really applicable for the 2nd, 3rd, and 4th models because we do not use entity effects (in the ipynb this is entity_effects=false). This was turned off because the distance between the ZCTA and the nearest ICE facility does not change with year (static). 
+::: Naomi Callout - So our R^2 within isn't really applicable for the 2nd, 3rd, and 4th models because we do not use entity effects (in the ipynb this is entity_effects=false). This was turned off because the distance between the ZCTA and the nearest ICE facility does not change with year (static).  
 
 
 # Discussion
