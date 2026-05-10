@@ -32,9 +32,9 @@ Objective: To assess whether increased ICE enforcement correlates with reduced h
 
 Methods: We use national datasets on ICE detention activity and health care utilization to analyze the relationship between enforcement intensity and health care utilization across geographies and over time. We will control for potential confounders such as socioeconomic status, demographic characteristics, and local health care infrastructure.
 
-Results: \[TBD\]
+Results: In Two-Way Fixed Effects panel models, the localized presence of an ICE detention facility was not associated with a statistically significant change in routine doctor visits. Cross-sectional spatial models showed higher utilization near facilities, a pattern likely explained by urbanicity and underlying health care infrastructure rather than a causal enforcement effect.
 
-Conclusions: We found that immigration enforcement \[is/is not\] associated with reduced health care utilization. \[Implications for public health and policy TBD\]
+Conclusions: At the aggregate ZCTA level, we do not find statistically significant evidence that changes in local ICE detention infrastructure reduce routine health care utilization over time. However, stable aggregate utilization likely masks concentrated avoidance among vulnerable immigrant subpopulations, highlighting the need for targeted community outreach and more granular, event-driven data to monitor enforcement-related barriers to care.
 
 # Introduction
 
@@ -162,6 +162,61 @@ ice_max <- round(max(panel_data$average_daily_population, na.rm = TRUE), 1)
 
 We used Python to build panel data across datasets, geographies, and years. Our panel data spans from 2018 to 2023 and includes `r format(unique_zcta_count, big.mark=",")` unique ZCTAs across the United States. @tbl-descriptive-statistics provides descriptive statistics for our key variables of interest, including the average daily population in ICE detention facilities (ADP), the percentage of adults reporting a routine checkup within the past year, and key social determinants of health across ZCTAs. The median of our main outcome variable, `r med_val`%, suggests that for the majority of the United States, annual healthcare engagement is a standard behavior. For most areas of the United States, there are no detention centers (median ADP is `r ice_median`); however, the maximum ADP reaches `r format(ice_max, big.mark=",")`, demonstrating that certain areas have a large population in detention facilities. See Appendix A for detailed Python code used in data processing and analysis.
 
+To prepare the data for analysis, we used median imputation to handle missingness, log transformed data to address skewness, and feature engineered our main independent variable of interest, ICE enforcement intensity, by creating a binary variable indicating the presence of an ICE detention facility in a ZCTA code (i.e., whether the average daily population in detention facilities is greater than 0). We also created a continuous variable measuring the distance from each ZCTA code to the nearest ICE detention facility. These two variables allow us to capture both the presence and proximity of enforcement activity, which may have distinct effects on health care utilization.
+
+## Modeling
+
+To analyze the relationship between immigration enforcement intensity and health care utilization, we constructed an econometric framework utilizing a Two-Way Fixed Effects (TWFE) panel regression model. Because our dependent variable—the percentage of adults who had a routine checkup in the past year—is a proportion, we estimate a linear model. The linear fixed-effects framework is highly preferred in this context as it allows for the direct inclusion of high-dimensional geographic fixed effects (thousands of ZCTA codes) while providing coefficients that are easily interpretable as percentage-point changes.
+
+### Econometric Specification
+
+The primary econometric specification is defined by the following equation:
+
+$$
+Y_{it} = \beta_{0} + \beta_{1} \text{Enforcement}_{it} + \Gamma \mathbf{X}_{it} + \alpha_{i} + \delta_{t} + \epsilon_{it}
+$$
+
+Where:
+
+* $Y_{it}$ is the percentage of adults who had a routine checkup in ZCTA $i$ during year $t$.
+* $\text{Enforcement}_{it}$ represents the primary independent variable of interest (e.g., proximity to an ICE facility or detention population density).
+* $\Gamma \mathbf{X}_{it}$ is a vector of time-varying socioeconomic controls (race, citizenship, poverty, etc.).
+* $\alpha_i$ represents ZCTA-level fixed effects, capturing all time-invariant geographic heterogeneity.
+* $\delta_t$ represents year fixed effects, capturing national macro-level shocks.
+* $\epsilon_{it}$ is the idiosyncratic error term, with standard errors clustered at the ZCTA level.
+
+To capture the multidimensional nature of immigration enforcement and its localized "chilling effect," we estimate four variations of this core model:
+
+1. **Model 1: Binary ICE Presence (TWFE)** – This model utilizes a binary indicator (has_ice_facility) for the physical presence of an ICE detention facility within a ZCTA. This captures the immediate, localized impact of enforcement infrastructure on the resident population.
+
+2. **Model 2: Logarithmic Distance to Facility** – To assess how the enforcement effect scales geographically, this model uses the natural logarithm of the distance (in miles) to the nearest ICE facility. The logarithmic transformation accounts for the non-linear relationship where changes in proximity matter most when a population is already relatively close to a facility.
+
+3. **Model 3: Regional Chilling Effect (50-Mile Threshold)** – This model employs a binary indicator for ZCTAs located within a 50-mile radius of a detention center. This threshold tests whether the "chilling effect" extends beyond the immediate vicinity into broader commuter and social zones.
+
+4. **Model 4: Distance Decay Gradient** – This model replaces the single binary threshold with a series of distance bins (0–10 miles, 10–25 miles, and 25–50 miles). This allows us to test for a distance decay effect—the hypothesis that the reduction in healthcare utilization is most severe in immediate proximity to enforcement activity and monotonically diminishes as distance increases.
+
+### Identification Strategy
+
+A central advantage of the TWFE framework (utilized explicitly in Model 1) is that the coefficient of interest, $\beta_1$, is identified primarily by "switchers"—ZCTAs that experienced a change in their enforcement status (e.g., the opening or closing of an ICE facility) during the 2018–2023 sample period. ZCTAs with constant enforcement levels throughout the period serve as the control group to establish the counterfactual time trend. The validity of this approach relies on the parallel trends assumption: the assumption that in the absence of changes to ICE enforcement, healthcare utilization in "treated" ZCTAs would have trended parallel to those in "control" ZCTAs. Furthermore, because our study period overlaps with the COVID-19 pandemic—which caused a universal, severe decline in routine medical visits—the inclusion of year fixed effects ($\delta_t$) is critical. These year parameters absorb national-level pandemic fluctuations, ensuring that our estimates isolate the variation in healthcare utilization associated strictly with local enforcement intensity rather than global health shocks.
+
+### Controls and Variable Selection
+
+To isolate the effect of ICE enforcement, we must account for underlying socioeconomic and demographic factors that simultaneously influence healthcare access and vulnerability to immigration enforcement. Initially, a broad suite of variables was considered, including race, citizenship status, poverty rates, education levels, unemployment, and housing conditions (rent burden, vehicle access, and internet access). Because demographic indicators are often highly correlated (e.g., race, poverty, and rent burden), including all variables can lead to severe multicollinearity, which inflates standard errors and destabilizes coefficient estimates. To address this, we conducted a Variance Inflation Factor (VIF) diagnostic on the full set of controls. Based on the VIF results, we refined our control vector ($\mathbf{X}_{it}$) to a parsimonious set of independent variables that effectively capture local vulnerability without introducing excessive collinearity. The final models control for:
+
+* Percentage of the population below the poverty line
+* Percentage of non-citizens
+* Median household income
+* Percentage of the population identifying as White
+* Percentage of the population with a Bachelor's degree or higher
+* Percentage of the population unemployed
+
+### Estimation and Inference
+
+In longitudinal panel data, observations within the same geographic unit over time are not independent. A ZCTA's healthcare utilization rate in 2018 is highly predictive of its rate in 2019. If this serial autocorrelation is ignored, standard errors will be artificially small, leading to an overstatement of statistical significance. To ensure robust inference, all models were estimated with standard errors clustered at the ZCTA level. Clustering at the entity level adjusts the standard errors to account for both heteroskedasticity and arbitrary correlation of the error terms ($\epsilon_{it}$) within each ZIP code over time, providing a conservative and rigorous test of our hypotheses.
+
+## Results
+
+
 ```{r}
 #| label: fig-correlation-matrix
 #| fig-cap: "Correlation matrix. Note: Correlations below 0.01 are suppressed."
@@ -231,61 +286,6 @@ corr_miles = doc_visits_corrs |>
     pull()
 ```
 
-To prepare the data for analysis, we used median imputation to handle missingness, log transformed data to address skewness, and feature engineered our main independent variable of interest, ICE enforcement intensity, by creating a binary variable indicating the presence of an ICE detention facility in a ZCTA code (i.e., whether the average daily population in detention facilities is greater than 0). We also created a continuous variable measuring the distance from each ZCTA code to the nearest ICE detention facility. These two variables allow us to capture both the presence and proximity of enforcement activity, which may have distinct effects on health care utilization.
-
-## Modeling
-
-To analyze the relationship between immigration enforcement intensity and health care utilization, we constructed an econometric framework utilizing a Two-Way Fixed Effects (TWFE) panel regression model. Because our dependent variable—the percentage of adults who had a routine checkup in the past year—is a proportion, we estimate a linear model. The linear fixed-effects framework is highly preferred in this context as it allows for the direct inclusion of high-dimensional geographic fixed effects (thousands of ZCTA codes) while providing coefficients that are easily interpretable as percentage-point changes.
-
-### Econometric Specification
-
-The primary econometric specification is defined by the following equation:
-
-$$
-Y_{it} = \beta_{0} + \beta_{1} \text{Enforcement}_{it} + \Gamma \mathbf{X}_{it} + \alpha_{i} + \delta_{t} + \epsilon_{it}
-$$
-
-Where:
-
-* $Y_{it}$ is the percentage of adults who had a routine checkup in ZCTA
-* $i$ during year $t$.$Enforcement_{it}$ represents the primary independent variable of interest (e.g., proximity to an ICE facility or detention population density).
-* $\Gamma \mathbf{X}_{it}$ is a vector of time-varying socioeconomic controls (race, citizenship, poverty, etc.).
-* $\alpha_i$ represents ZCTA-level fixed effects, capturing all time-invariant geographic heterogeneity.
-* $\delta_t$ represents year fixed effects, capturing national macro-level shocks.
-* $\epsilon_{it}$ is the idiosyncratic error term, with standard errors clustered at the ZCTA level.
-
-To capture the multidimensional nature of immigration enforcement and its localized "chilling effect," we estimate four variations of this core model:
-
-1. **Model 1: Binary ICE Presence (TWFE)** – This model utilizes a binary indicator (has_ice_facility) for the physical presence of an ICE detention facility within a ZCTA. This captures the immediate, localized impact of enforcement infrastructure on the resident population.
-
-2. **Model 2: Logarithmic Distance to Facility** – To assess how the enforcement effect scales geographically, this model uses the natural logarithm of the distance (in miles) to the nearest ICE facility. The logarithmic transformation accounts for the non-linear relationship where changes in proximity matter most when a population is already relatively close to a facility.
-
-3. **Model 3: Regional Chilling Effect (50-Mile Threshold)** – This model employs a binary indicator for ZCTAs located within a 50-mile radius of a detention center. This threshold tests whether the "chilling effect" extends beyond the immediate vicinity into broader commuter and social zones.
-
-4. **Model 4: Distance Decay Gradient** – This model replaces the single binary threshold with a series of distance bins (0–10 miles, 10–25 miles, and 25–50 miles). This allows us to test for a distance decay effect—the hypothesis that the reduction in healthcare utilization is most severe in immediate proximity to enforcement activity and monotonically diminishes as distance increases.
-
-### Identification Strategy
-
-A central advantage of the TWFE framework (utilized explicitly in Model 1) is that the coefficient of interest, $\beta_1$, is identified primarily by "switchers"—ZCTAs that experienced a change in their enforcement status (e.g., the opening or closing of an ICE facility) during the 2018–2023 sample period. ZCTAs with constant enforcement levels throughout the period serve as the control group to establish the counterfactual time trend.The validity of this approach relies on the parallel trends assumption: the assumption that in the absence of changes to ICE enforcement, healthcare utilization in "treated" ZCTAs would have trended parallel to those in "control" ZCTAs. Furthermore, because our study period overlaps with the COVID-19 pandemic—which caused a universal, severe decline in routine medical visits—the inclusion of year fixed effects ($\delta_t$) is critical. These year parameters absorb national-level pandemic fluctuations, ensuring that our estimates isolate the variation in healthcare utilization associated strictly with local enforcement intensity rather than global health shocks.
-
-### Controls and Variable Selection
-
-To isolate the effect of ICE enforcement, we must account for underlying socioeconomic and demographic factors that simultaneously influence healthcare access and vulnerability to immigration enforcement. Initially, a broad suite of variables was considered, including race, citizenship status, poverty rates, education levels, unemployment, and housing conditions (rent burden, vehicle access, and internet access).Because demographic indicators are often highly correlated (e.g., race, poverty, and rent burden), including all variables can lead to severe multicollinearity, which inflates standard errors and destabilizes coefficient estimates. To address this, we conducted a Variance Inflation Factor (VIF) diagnostic on the full set of controls. Based on the VIF results, we refined our control vector ($\mathbf{X}_{it}$) to a parsimonious set of independent variables that effectively capture local vulnerability without introducing excessive collinearity. The final models control for:Percentage of the population below the poverty linePercentage of non-citizensMedian household incomePercentage of the population identifying as WhitePercentage of the population with a Bachelor's degree or higherPercentage of the population unemployed
-
-### Estimation and Inference
-
-In longitudinal panel data, observations within the same geographic unit over time are not independent. A ZCTA's healthcare utilization rate in 2018 is highly predictive of its rate in 2019. If this serial autocorrelation is ignored, standard errors will be artificially small, leading to an overstatement of statistical significance.To ensure robust inference, all models were estimated with standard errors clustered at the ZCTA level. Clustering at the entity level adjusts the standard errors to account for both heteroskedasticity and arbitrary correlation of the error terms ($\epsilon_{it}$) within each ZIP code over time, providing a conservative and rigorous test of our hypotheses.
-
-1.  **Model 1: ICE Presence** - This model includes the binary variable indicating the presence of an ICE detention facility in a ZCTA code as the main independent variable, controlling for confounders and fixed effects.
-
-2.  **Model 2: Distance to Nearest Facility** - This model includes the continuous variable measuring the distance from each ZCTA code to the nearest ICE detention facility as the main independent variable, controlling for confounders and fixed effects.
-
-3.  **Model 3: Regional Chilling Effect** - This model includes a binary variable indicating whether a ZCTA code is within 50 miles of an ICE detention facility as the main independent variable, controlling for confounders and fixed effects.
-
-4. **Model 4: Distance Decay Gradient** – This replaces the single binary threshold with a series of distance "bins": 0–10 miles, 10–25 miles, and 25–50 miles. This allows us to test for a distance decay effect—the hypothesis that the reduction in healthcare utilization is most severe in the immediate proximity of enforcement activity and diminishes as distance increases.
-
-## Results
-
 @fig-correlation-matrix provides a visual representation of the correlations between a subset of our analysis variables. The size of the population in ICE detention facilities does not seem correlated with the rate of doctor visits in a particular area (r = `r corr_pop_in_ice`). Hispanic/Latino ethnicity and citizenship status are much stronger correlates with doctor visits (r = `r corr_hisp` and r = `r corr_citizen`, respectively, suggesting that Hispanic/Latino folks and non-citizens are less likely to have had a recent doctor's visit). The distance to the nearest ICE detention facility has a slight negative correlation with doctor visits (r = `r corr_miles`), which may suggest that proximity to enforcement activity could be associated with reduced health care utilization, although this relationship is not strong.
 
 <!-- Map of doc visits -->
@@ -326,10 +326,7 @@ Rather than disproving the existence of enforcement-related fear, this strong po
 
 ![Population differences between ZCTAs with and without ICE facilities](./final-images/boxplot-population-ice.png){#fig-boxplot-population-ice width="80%"}
 
-@fig-boxplot-population-ice illustrates the stark population differences between ZCTAs with and without ICE facilities. The median population of ZCTAs with an ICE facility is 21,212, while the median population of ZCTAs without an ICE facility is 2,985. This great difference does lend support to the idea that the positive association between proximity to an ICE facility and healthcare utilization is likely driven by the confounding influence of urbanicity and healthcare infrastructure, rather than a true "chilling effect." The presence of an ICE facility is likely acting as a proxy for being in or near a $metropolitan area with greater healthcare access, which could explain the positive association observed in the spatial models.
-
-::: Naomi Callout - So our R^2 within isn't really applicable for the 2nd, 3rd, and 4th models because we do not use entity effects (in the ipynb this is entity_effects=false). This was turned off because the distance between the ZCTA and the nearest ICE facility does not change with year (static). 
-
+@fig-boxplot-population-ice illustrates the stark population differences between ZCTAs with and without ICE facilities. The median population of ZCTAs with an ICE facility is 21,212, while the median population of ZCTAs without an ICE facility is 2,985. This great difference does lend support to the idea that the positive association between proximity to an ICE facility and healthcare utilization is likely driven by the confounding influence of urbanicity and healthcare infrastructure, rather than a true "chilling effect." The presence of an ICE facility is likely acting as a proxy for being in or near a metropolitan area with greater healthcare access, which could explain the positive association observed in the spatial models.
 
 # Discussion
 
