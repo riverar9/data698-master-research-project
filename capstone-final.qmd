@@ -242,7 +242,7 @@ To analyze the relationship between immigration enforcement intensity and health
 The primary econometric specification is defined by the following equation:
 
 $$
-Y_{it} = \beta_{0} + \beta_{1} \text{Enforcement}_{it} + \Gamma \mathbf{X}_{it} + \alpha_{i} + \delta_{t} + \epsilon_{it}
+Y_{it} = \beta_{0} + \beta_{1} \text{(Enforcement)}_{it} + \Gamma \mathbf{X}_{it} + \alpha_{i} + \delta_{t} + \epsilon_{it}
 $$
 
 Where:
